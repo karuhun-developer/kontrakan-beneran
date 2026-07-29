@@ -14,3 +14,8 @@ Artisan::command('inspire', function () {
  */
 Schedule::command('billing:generate-invoices')->dailyAt('01:00');
 Schedule::command('billing:apply-late-fees')->dailyAt('01:30');
+
+/*
+ * Notifications (Fase 5). Remind staff about invoices nearing their due date.
+ */
+Schedule::command('notifications:send-due-reminders')->dailyAt('07:00');

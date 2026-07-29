@@ -82,6 +82,14 @@ class Invoice extends Model
     }
 
     /**
+     * @return HasMany<InvoiceReminder, $this>
+     */
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(InvoiceReminder::class);
+    }
+
+    /**
      * Total amount settled against this invoice.
      */
     public function paidAmount(): int

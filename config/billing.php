@@ -32,4 +32,17 @@ return [
         'value' => (int) env('BILLING_LATE_FEE_VALUE', 5),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Due date reminders
+    |--------------------------------------------------------------------------
+    |
+    | How many days before an outstanding invoice's due date staff should be
+    | reminded. Each milestone fires once per invoice. Set to an empty array
+    | to disable reminders entirely.
+    |
+    */
+
+    'reminder_days' => [7, 3, 1],
+
 ];
