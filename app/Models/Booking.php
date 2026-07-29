@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Booking extends Model
 {
@@ -55,6 +56,14 @@ class Booking extends Model
     public function penyewa(): BelongsTo
     {
         return $this->belongsTo(Penyewa::class);
+    }
+
+    /**
+     * @return HasMany<BookingLog, $this>
+     */
+    public function logs(): HasMany
+    {
+        return $this->hasMany(BookingLog::class);
     }
 
     /**
