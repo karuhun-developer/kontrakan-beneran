@@ -9,6 +9,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Deposit\DepositController;
 use App\Http\Controllers\FrontDesk\BookingController;
 use App\Http\Controllers\Laundry\LaundryController;
+use App\Http\Controllers\Management\BranchController;
+use App\Http\Controllers\Management\TenantController;
+use App\Http\Controllers\Management\UserController;
 use App\Http\Controllers\Master\FacilityController;
 use App\Http\Controllers\Master\PenyewaController;
 use App\Http\Controllers\Master\RoomController;
@@ -157,6 +160,26 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
     Route::middleware('permission:branch.manage')->group(function () {
         Route::get('settings/payment', [PaymentSettingController::class, 'edit'])->name('payment-settings.edit');
         Route::patch('settings/payment', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
+    });
+
+    /*
+     * Management (Fase 7). Tenant/branch/user administration.
+     * Tenants are platform-wide (super-admin only); branches and staff are
+     * scoped to the active tenant and gated per permission.
+     */
+    Route::prefix('management')->name('management.')->group(function () {
+        Route::resource('tenants', TenantController::class)
+            ->except('show')
+            ->middleware('role:super-admin');
+
+        Route::resource('branches', BranchController::class)
+            ->except('show')
+            ->middlewareFor(['index', 'edit'], 'permission:branch.view')
+            ->middlewareFor(['create', 'store', 'update', 'destroy'], 'permission:branch.manage');
+
+        Route::resource('users', UserController::class)
+            ->except('show')
+            ->middleware('permission:tenant.member.manage');
     });
 });
 

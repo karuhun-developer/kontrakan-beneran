@@ -1,7 +1,9 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BedDouble,
     BookOpen,
+    Building,
+    Building2,
     CalendarCheck,
     ChartColumn,
     FolderGit2,
@@ -12,6 +14,7 @@ import {
     Shirt,
     Sofa,
     Tags,
+    UserCog,
     Users,
     Wallet,
 } from 'lucide-react';
@@ -36,13 +39,16 @@ import deposits from '@/routes/deposits';
 import facilities from '@/routes/facilities';
 import invoices from '@/routes/invoices';
 import laundry from '@/routes/laundry';
+import managementBranches from '@/routes/management/branches';
+import managementTenants from '@/routes/management/tenants';
+import managementUsers from '@/routes/management/users';
 import { edit as paymentSettingsEdit } from '@/routes/payment-settings';
 import penyewa from '@/routes/penyewa';
 import reports from '@/routes/reports';
 import roomTypes from '@/routes/room-types';
 import rooms from '@/routes/rooms';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { Auth, NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
@@ -123,6 +129,21 @@ const masterNavItems: GatedNavItem[] = [
     },
 ];
 
+const managementNavItems: GatedNavItem[] = [
+    {
+        title: 'Cabang',
+        href: managementBranches.index(),
+        icon: Building,
+        permission: 'branch.view',
+    },
+    {
+        title: 'Pengguna',
+        href: managementUsers.index(),
+        icon: UserCog,
+        permission: 'tenant.member.manage',
+    },
+];
+
 const settingsNavItems: GatedNavItem[] = [
     {
         title: 'Rekening',
@@ -147,12 +168,26 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     const can = useCan();
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const isSuperAdmin = auth.user?.role === 'super-admin';
 
     const operational = operationalNavItems.filter((item) =>
         can(item.permission),
     );
     const analytics = analyticsNavItems.filter((item) => can(item.permission));
     const master = masterNavItems.filter((item) => can(item.permission));
+    const management: NavItem[] = [
+        ...(isSuperAdmin
+            ? [
+                  {
+                      title: 'Bisnis',
+                      href: managementTenants.index(),
+                      icon: Building2,
+                  },
+              ]
+            : []),
+        ...managementNavItems.filter((item) => can(item.permission)),
+    ];
     const settings = settingsNavItems.filter((item) => can(item.permission));
 
     return (
@@ -180,6 +215,9 @@ export function AppSidebar() {
                 )}
                 {master.length > 0 && (
                     <NavMain items={master} label="Master Data" />
+                )}
+                {management.length > 0 && (
+                    <NavMain items={management} label="Manajemen" />
                 )}
                 {settings.length > 0 && (
                     <NavMain items={settings} label="Pengaturan" />
