@@ -86,6 +86,42 @@ class PortalInvoiceTest extends TestCase
             );
     }
 
+    public function test_dashboard_surfaces_the_soonest_due_invoice_and_recent_history()
+    {
+        Invoice::factory()->create([
+            'penyewa_id' => $this->penyewa->id,
+            'status' => InvoiceStatus::Unpaid,
+            'due_date' => now()->addDays(10)->toDateString(),
+        ]);
+        $soonest = Invoice::factory()->create([
+            'penyewa_id' => $this->penyewa->id,
+            'status' => InvoiceStatus::Unpaid,
+            'due_date' => now()->addDays(2)->toDateString(),
+        ]);
+        Invoice::factory()->create([
+            'penyewa_id' => $this->penyewa->id,
+            'status' => InvoiceStatus::Paid,
+        ]);
+
+        $this->get(route('portal.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->where('summary.next_due.id', $soonest->id)
+                ->where('summary.outstanding_count', 2)
+                ->has('summary.recent_invoices', 3)
+            );
+    }
+
+    public function test_dashboard_next_due_is_null_without_outstanding_invoices()
+    {
+        $this->invoice(InvoiceStatus::Paid);
+
+        $this->get(route('portal.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->where('summary.next_due', null)
+                ->has('summary.recent_invoices', 1)
+            );
+    }
+
     public function test_can_view_own_invoice_detail()
     {
         $invoice = $this->invoice();

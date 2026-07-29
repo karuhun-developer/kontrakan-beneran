@@ -1,5 +1,13 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Building2, DoorOpen, ReceiptText, Wallet } from 'lucide-react';
+import { ModalLink } from '@inertiaui/modal-react';
+import {
+    Building2,
+    CalendarClock,
+    DoorOpen,
+    ReceiptText,
+    Wallet,
+} from 'lucide-react';
+import { ColorBadge } from '@/components/master/status-badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -7,15 +15,33 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatRupiah } from '@/lib/format';
+import { formatDate, formatRupiah } from '@/lib/format';
+import portalDeposits from '@/routes/portal/deposits';
 import portalInvoices from '@/routes/portal/invoices';
 import type { Auth } from '@/types';
+
+type RecentInvoice = {
+    id: number;
+    number: string;
+    total: number;
+    due_date: string;
+    status: string;
+    status_label: string;
+    status_color: string;
+};
 
 type PortalSummary = {
     room: string | null;
     outstanding_count: number;
     outstanding_value: number;
     deposit_balance: number;
+    next_due: {
+        id: number;
+        number: string;
+        due_date: string;
+        outstanding: number;
+    } | null;
+    recent_invoices: RecentInvoice[];
 };
 
 type PortalDashboardProps = {
@@ -37,6 +63,7 @@ export default function PortalDashboard() {
             title: 'Kamar Saya',
             icon: DoorOpen,
             value: summary?.room ?? 'Belum ada kamar aktif',
+            href: null,
         },
         {
             title: 'Tagihan Tertunggak',
@@ -45,11 +72,13 @@ export default function PortalDashboard() {
                 summary && summary.outstanding_count > 0
                     ? `${formatRupiah(summary.outstanding_value)} · ${summary.outstanding_count} tagihan`
                     : 'Tidak ada tunggakan',
+            href: portalInvoices.index().url,
         },
         {
             title: 'Saldo Deposit',
             icon: Wallet,
             value: formatRupiah(summary?.deposit_balance ?? 0),
+            href: portalDeposits.index().url,
         },
     ];
 
@@ -71,40 +100,129 @@ export default function PortalDashboard() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
-                    {cards.map((card) => (
-                        <Card key={card.title}>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    {card.title}
-                                </CardTitle>
-                                <card.icon className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-lg font-semibold">
-                                    {card.value}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    {cards.map((card) => {
+                        const body = (
+                            <Card
+                                className={
+                                    card.href
+                                        ? 'transition-colors hover:border-primary/40'
+                                        : undefined
+                                }
+                            >
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        {card.title}
+                                    </CardTitle>
+                                    <card.icon className="size-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-lg font-semibold">
+                                        {card.value}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        );
+
+                        return card.href ? (
+                            <Link
+                                key={card.title}
+                                href={card.href}
+                                className="block"
+                            >
+                                {body}
+                            </Link>
+                        ) : (
+                            <div key={card.title}>{body}</div>
+                        );
+                    })}
                 </div>
 
-                {summary && summary.outstanding_count > 0 && (
-                    <Card>
+                {summary?.next_due && (
+                    <Card className="border-primary/30 bg-primary/5">
                         <CardContent className="flex flex-wrap items-center justify-between gap-4 py-5">
-                            <div>
-                                <p className="font-medium">
-                                    Kamu punya {summary.outstanding_count}{' '}
-                                    tagihan yang belum lunas.
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    Total {formatRupiah(summary.outstanding_value)} menunggu pembayaran.
-                                </p>
+                            <div className="flex items-start gap-3">
+                                <CalendarClock className="mt-0.5 size-5 text-primary" />
+                                <div>
+                                    <p className="font-medium">
+                                        Tagihan berikutnya jatuh tempo{' '}
+                                        {formatDate(summary.next_due.due_date)}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {summary.next_due.number} ·{' '}
+                                        {formatRupiah(
+                                            summary.next_due.outstanding,
+                                        )}{' '}
+                                        menunggu pembayaran
+                                        {summary.outstanding_count > 1 &&
+                                            ` · ${summary.outstanding_count - 1} tagihan lain`}
+                                    </p>
+                                </div>
                             </div>
                             <Button asChild>
-                                <Link href={portalInvoices.index().url}>
-                                    Lihat Tagihan
-                                </Link>
+                                <ModalLink
+                                    href={
+                                        portalInvoices.show(summary.next_due.id)
+                                            .url
+                                    }
+                                >
+                                    Bayar Sekarang
+                                </ModalLink>
                             </Button>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {summary && summary.recent_invoices.length > 0 && (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                            <CardTitle className="text-base">
+                                Tagihan Terbaru
+                            </CardTitle>
+                            <Link
+                                href={portalInvoices.index().url}
+                                className="text-sm font-medium text-primary hover:underline"
+                            >
+                                Semua
+                            </Link>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <ul className="divide-y">
+                                {summary.recent_invoices.map((invoice) => (
+                                    <li
+                                        key={invoice.id}
+                                        className="flex items-center justify-between gap-4 px-6 py-3"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="truncate font-mono text-sm font-medium">
+                                                {invoice.number}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Jatuh tempo{' '}
+                                                {formatDate(invoice.due_date)}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <ColorBadge
+                                                label={invoice.status_label}
+                                                color={invoice.status_color}
+                                            />
+                                            <span className="text-sm font-medium whitespace-nowrap">
+                                                {formatRupiah(invoice.total)}
+                                            </span>
+                                            <ModalLink
+                                                href={
+                                                    portalInvoices.show(
+                                                        invoice.id,
+                                                    ).url
+                                                }
+                                                className="text-sm font-medium text-primary hover:underline"
+                                            >
+                                                Lihat
+                                            </ModalLink>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
                         </CardContent>
                     </Card>
                 )}
