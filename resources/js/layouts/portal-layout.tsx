@@ -1,3 +1,4 @@
+import { ModalRoot } from '@inertiaui/modal-react';
 import { Link, usePage } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -9,6 +10,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserMenuContent } from '@/components/user-menu-content';
+import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useInitials } from '@/hooks/use-initials';
 import type { BreadcrumbItem } from '@/types';
 
@@ -21,6 +23,8 @@ export default function PortalLayout({
 }) {
     const { auth } = usePage().props;
     const getInitials = useInitials();
+
+    useFlashToast();
 
     return (
         <div className="flex min-h-screen flex-col bg-background">
@@ -75,6 +79,8 @@ export default function PortalLayout({
             <main className="mx-auto w-full flex-1 px-4 py-6 md:max-w-5xl">
                 {children}
             </main>
+
+            <ModalRoot />
         </div>
     );
 }

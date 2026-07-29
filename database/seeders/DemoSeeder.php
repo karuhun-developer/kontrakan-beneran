@@ -3,9 +3,13 @@
 namespace Database\Seeders;
 
 use App\Enums\CommonStatus;
+use App\Enums\RoomStatus;
 use App\Enums\UserRole;
 use App\Models\Branch;
+use App\Models\Facility;
 use App\Models\Penyewa;
+use App\Models\Room;
+use App\Models\RoomType;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -117,5 +121,55 @@ class DemoSeeder extends Seeder
                 'status' => CommonStatus::Active,
             ],
         );
+
+        $this->seedMasterData($branchPusat);
+        $this->seedMasterData($branchSelatan);
+    }
+
+    /**
+     * Seed room types, facilities, and rooms for a branch.
+     */
+    private function seedMasterData(Branch $branch): void
+    {
+        $facilities = collect(['AC', 'WiFi', 'Kamar Mandi Dalam', 'Lemari', 'Kasur'])
+            ->map(fn (string $name): Facility => Facility::firstOrCreate(
+                ['tenant_id' => $branch->tenant_id, 'branch_id' => $branch->id, 'name' => $name],
+                ['status' => CommonStatus::Active],
+            ));
+
+        $types = [
+            ['name' => 'Standard', 'capacity' => 1, 'monthly_price' => 800_000],
+            ['name' => 'Deluxe', 'capacity' => 1, 'monthly_price' => 1_200_000],
+            ['name' => 'Suite', 'capacity' => 2, 'monthly_price' => 2_000_000],
+        ];
+
+        $roomNumber = 1;
+
+        foreach ($types as $type) {
+            $roomType = RoomType::firstOrCreate(
+                ['tenant_id' => $branch->tenant_id, 'branch_id' => $branch->id, 'name' => $type['name']],
+                [
+                    'capacity' => $type['capacity'],
+                    'monthly_price' => $type['monthly_price'],
+                    'status' => CommonStatus::Active,
+                ],
+            );
+
+            for ($i = 0; $i < 3; $i++) {
+                $room = Room::firstOrCreate(
+                    ['branch_id' => $branch->id, 'number' => str_pad((string) $roomNumber, 3, '0', STR_PAD_LEFT)],
+                    [
+                        'tenant_id' => $branch->tenant_id,
+                        'room_type_id' => $roomType->id,
+                        'floor' => (int) ceil($roomNumber / 3),
+                        'status' => CommonStatus::Active,
+                        'room_status' => RoomStatus::Available,
+                    ],
+                );
+
+                $room->facilities()->syncWithoutDetaching($facilities->random(3)->pluck('id'));
+                $roomNumber++;
+            }
+        }
     }
 }

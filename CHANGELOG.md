@@ -12,13 +12,32 @@ dan proyek ini menganut [Semantic Versioning](https://semver.org/lang/id/).
 Roadmap fitur (lihat [`PRD.md`](./PRD.md) §8). Item dipindahkan ke versi rilis saat selesai.
 
 ### Direncanakan
-- **Fase 1 — Master data:** Room Type, Room, Facility, Penyewa (+ media KTP).
 - **Fase 2 — Booking & Front Desk:** availability engine (anti double-booking), booking date-range, grid front desk, check-in/out, perpanjang sewa + log.
 - **Fase 3 — Billing & Kas:** Invoice/Tagihan (recurring bulanan + auto denda telat), Payment (Midtrans + manual), Cashflow + kategori (auto-income).
 - **Fase 4 — Deposit & Laundry:** Deposit + ledger (potong/refund/topup), LaundryOrder (potong deposit / bayar sendiri).
 - **Fase 5 — Notifikasi:** scheduler reminder jatuh tempo H-7/H-3/H-1, in-app + email, notification center, preferensi.
 - **Fase 6 — Portal Penyewa:** dashboard, tagihan + bayar online, riwayat bayar & kamar, deposit, laundry, notifikasi.
 - **Fase 7 — Analitik & Polish:** dashboard/laporan, ekspor CSV, hardening & optimisasi.
+
+---
+
+## [0.3.0] - 2026-07-29
+
+**Fase 1 — Master data.** CRUD Tipe Kamar, Fasilitas, Kamar, dan Penyewa dengan branch scoping ketat.
+
+### Added
+- **Enum domain:** `RoomStatus` (available/reserved/occupied/maintenance + label/warna/`isBookable`).
+- **Model & migrasi master:** `RoomType` (kapasitas + harga dasar), `Facility`, `Room` (nomor unik per cabang, lantai, status hunian, harga khusus opsional), pivot `facility_room`; `Penyewa` kini `HasMedia` dengan koleksi KTP (`id_card`, konversi thumb).
+- **Branch scoping model:** trait `BelongsToBranch` (`tenant()`/`branch()` + scope `forBranch`/`forCurrentBranch`); `Room::effectiveMonthlyPrice` (fallback ke harga tipe).
+- **CRUD backend:** controller `RoomType`/`Facility`/`Room`/`Penyewa` (trait `ResolvesCurrentBranch`), Form Request tervalidasi + tersegmentasi cabang (exists/unique per `branch_id`), rute grup `master` dengan permission `*.view`/`*.manage` per aksi.
+- **Frontend:** 8 halaman Inertia (index + form) untuk tiap master, komponen bersama (`PageHeader`, `Pagination`, `RowActions`, `StatusBadge`/`ColorBadge`, `Table`, `Textarea`), hook `useCan`/`useCanManageMaster`, `formatRupiah`, upload KTP (preview + method spoofing), grup nav sidebar "Master Data".
+- **Form modal flyover:** integrasi `inertiaui/modal` — form create/edit master dibuka sebagai slideover kanan (bukan navigasi halaman penuh). Backend `create()`/`edit()` mengembalikan `Inertia::modal(...)->baseRoute(...)`; frontend `ModalStackProvider` + `ModalRoot` (di app & portal layout), `ModalLink` di `PageHeader`/`RowActions`, shell `ModalForm`, dan default slideover via `putConfig` (tema `bg-background`, tutup otomatis setelah simpan).
+- **Data demo & pengujian:** factory `RoomType`/`Facility`/`Room`, `DemoSeeder` mengisi master per cabang (fasilitas, tipe, kamar), 7 test fitur (CRUD, isolasi cabang, unik nomor kamar, upload KTP).
+
+### Changed
+- `Branch` model: relasi `roomTypes`/`facilities`/`rooms`.
+- `RolePermissionSeeder`: permission `roomtype`/`facility`/`room` (`.view`/`.manage`).
+- Shared props Inertia menyertakan `permissions` user untuk cek ability di frontend.
 
 ---
 

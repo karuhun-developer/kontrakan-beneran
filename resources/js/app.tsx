@@ -1,3 +1,4 @@
+import { ModalStackProvider, putConfig } from '@inertiaui/modal-react';
 import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -8,6 +9,29 @@ import PortalLayout from '@/layouts/portal-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+// Default modals to a right-side slideover (flyout) with theme-aware panels.
+putConfig({
+    type: 'slideover',
+    slideover: {
+        position: 'right',
+        maxWidth: 'lg',
+        closeButton: true,
+        closeExplicitly: false,
+        closeOnClickOutside: true,
+        paddingClasses: '',
+        panelClasses: 'bg-background text-foreground min-h-screen',
+    },
+    modal: {
+        position: 'center',
+        maxWidth: '2xl',
+        closeButton: true,
+        closeExplicitly: false,
+        closeOnClickOutside: true,
+        paddingClasses: '',
+        panelClasses: 'bg-background text-foreground rounded-xl',
+    },
+});
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -29,7 +53,7 @@ createInertiaApp({
     withApp(app) {
         return (
             <TooltipProvider delayDuration={0}>
-                {app}
+                <ModalStackProvider>{app}</ModalStackProvider>
                 <Toaster />
             </TooltipProvider>
         );

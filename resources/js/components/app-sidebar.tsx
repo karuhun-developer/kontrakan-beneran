@@ -1,5 +1,13 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import {
+    BedDouble,
+    BookOpen,
+    FolderGit2,
+    LayoutGrid,
+    Sofa,
+    Tags,
+    Users,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { BranchSwitcher } from '@/components/branch-switcher';
 import { NavFooter } from '@/components/nav-footer';
@@ -14,6 +22,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import facilities from '@/routes/facilities';
+import penyewa from '@/routes/penyewa';
+import roomTypes from '@/routes/room-types';
+import rooms from '@/routes/rooms';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
@@ -22,6 +34,29 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+];
+
+const masterNavItems: NavItem[] = [
+    {
+        title: 'Kamar',
+        href: rooms.index(),
+        icon: BedDouble,
+    },
+    {
+        title: 'Tipe Kamar',
+        href: roomTypes.index(),
+        icon: Tags,
+    },
+    {
+        title: 'Fasilitas',
+        href: facilities.index(),
+        icon: Sofa,
+    },
+    {
+        title: 'Penyewa',
+        href: penyewa.index(),
+        icon: Users,
     },
 ];
 
@@ -56,6 +91,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <NavMain items={masterNavItems} label="Master Data" />
             </SidebarContent>
 
             <SidebarFooter>

@@ -56,4 +56,28 @@ class Branch extends Model
     {
         return $this->hasMany(Penyewa::class);
     }
+
+    /**
+     * @return HasMany<RoomType, $this>
+     */
+    public function roomTypes(): HasMany
+    {
+        return $this->hasMany(RoomType::class);
+    }
+
+    /**
+     * @return HasMany<Facility, $this>
+     */
+    public function facilities(): HasMany
+    {
+        return $this->hasMany(Facility::class);
+    }
+
+    /**
+     * @return HasMany<Room, $this>
+     */
+    public function rooms(): HasMany
+    {
+        return $this->hasMany(Room::class);
+    }
 }

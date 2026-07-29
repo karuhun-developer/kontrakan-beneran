@@ -1,19 +1,21 @@
-import { router } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import type { FlashToast } from '@/types/ui';
 
+/**
+ * Surfaces Laravel flash messages (`flash.success` / `flash.error`) shared via
+ * Inertia as sonner toasts.
+ */
 export function useFlashToast(): void {
+    const { flash } = usePage().props;
+
     useEffect(() => {
-        return router.on('flash', (event) => {
-            const flash = (event as CustomEvent).detail?.flash;
-            const data = flash?.toast as FlashToast | undefined;
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
 
-            if (!data) {
-                return;
-            }
-
-            toast[data.type](data.message);
-        });
-    }, []);
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash?.success, flash?.error]);
 }

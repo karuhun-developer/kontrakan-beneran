@@ -12,6 +12,7 @@ export type User = {
     role: UserRole | null;
     role_label: string | null;
     is_staff: boolean;
+    permissions: string[];
     [key: string]: unknown;
 };
 

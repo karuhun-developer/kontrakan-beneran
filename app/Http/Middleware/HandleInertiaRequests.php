@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                     'role' => $user->primaryRole()?->value,
                     'role_label' => $user->primaryRole()?->label(),
                     'is_staff' => $user->isStaff(),
+                    'permissions' => $user->getAllPermissions()->pluck('name')->values(),
                 ] : null,
             ],
             'tenant' => $user?->tenant
