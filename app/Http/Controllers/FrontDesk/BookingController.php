@@ -5,9 +5,10 @@ namespace App\Http\Controllers\FrontDesk;
 use App\Actions\Booking\CancelBooking;
 use App\Actions\Booking\CheckInBooking;
 use App\Actions\Booking\CheckOutBooking;
-use App\Actions\Booking\CreateBooking;
+use App\Actions\Booking\CreateBookingWithBilling;
 use App\Actions\Booking\ExtendBooking;
 use App\Enums\BookingStatus;
+use App\Enums\PaymentMethod;
 use App\Http\Controllers\Concerns\ResolvesCurrentBranch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FrontDesk\BookingRequest;
@@ -156,12 +157,15 @@ class BookingController extends Controller
             ->baseRoute('bookings.index');
     }
 
-    public function store(BookingRequest $request, CreateBooking $createBooking): RedirectResponse
+    public function store(BookingRequest $request, CreateBookingWithBilling $createBooking): RedirectResponse
     {
         $branch = $this->currentBranch();
 
         $room = Room::forBranch($branch->id)->findOrFail($request->validated('room_id'));
         $penyewa = Penyewa::forBranch($branch->id)->findOrFail($request->validated('penyewa_id'));
+
+        $payNow = $request->boolean('pay_now');
+        $payMethod = $request->validated('pay_method');
 
         $createBooking->handle(
             penyewa: $penyewa,
@@ -171,6 +175,9 @@ class BookingController extends Controller
             status: BookingStatus::from($request->validated('status') ?? BookingStatus::Confirmed->value),
             notes: $request->validated('notes'),
             actor: $request->user(),
+            generateInvoice: $request->boolean('generate_invoice') || $payNow,
+            paymentAmount: $payNow ? (int) $request->validated('pay_amount') : null,
+            paymentMethod: $payNow && $payMethod !== null ? PaymentMethod::from($payMethod) : null,
         );
 
         return to_route('bookings.index')->with('success', 'Booking berhasil dibuat.');
@@ -291,6 +298,11 @@ class BookingController extends Controller
                 'value' => $status->value,
                 'label' => $status->label(),
             ]),
+            'paymentMethods' => collect(PaymentMethod::manualCases())
+                ->map(fn (PaymentMethod $method): array => [
+                    'value' => $method->value,
+                    'label' => $method->label(),
+                ]),
         ];
     }
 }

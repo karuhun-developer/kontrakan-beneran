@@ -3,6 +3,9 @@
 namespace Tests\Feature\Booking;
 
 use App\Enums\BookingStatus;
+use App\Enums\CashflowType;
+use App\Enums\InvoiceStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\Branch;
@@ -159,6 +162,87 @@ class BookingControllerTest extends TestCase
         $this->postJson(route('penyewa.quick-store'), [
             'phone' => '081234567890',
         ])->assertUnprocessable()->assertJsonValidationErrors('name');
+    }
+
+    public function test_walkin_with_pay_now_creates_booking_invoice_payment_and_cashflow()
+    {
+        $this->actingAsRole(UserRole::Staff);
+        $this->room->update(['monthly_price' => 1_000_000]);
+
+        $this->post(route('bookings.store'), [
+            'room_id' => $this->room->id,
+            'penyewa_id' => $this->penyewa->id,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-09-01',
+            'status' => BookingStatus::CheckedIn->value,
+            'generate_invoice' => true,
+            'pay_now' => true,
+            'pay_amount' => 1_000_000,
+            'pay_method' => PaymentMethod::Cash->value,
+        ])->assertRedirect(route('bookings.index'));
+
+        $booking = Booking::first();
+        $this->assertNotNull($booking);
+
+        $this->assertDatabaseHas('invoices', [
+            'booking_id' => $booking->id,
+            'branch_id' => $this->branch->id,
+            'total' => 1_000_000,
+            'status' => InvoiceStatus::Paid->value,
+        ]);
+        $this->assertDatabaseHas('payments', [
+            'branch_id' => $this->branch->id,
+            'amount' => 1_000_000,
+            'method' => PaymentMethod::Cash->value,
+        ]);
+        $this->assertDatabaseHas('cashflows', [
+            'branch_id' => $this->branch->id,
+            'type' => CashflowType::Income->value,
+            'amount' => 1_000_000,
+        ]);
+    }
+
+    public function test_reservation_can_auto_generate_invoice_without_payment()
+    {
+        $this->actingAsRole(UserRole::Staff);
+        $this->room->update(['monthly_price' => 1_000_000]);
+
+        $this->post(route('bookings.store'), [
+            'room_id' => $this->room->id,
+            'penyewa_id' => $this->penyewa->id,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-09-01',
+            'status' => BookingStatus::Confirmed->value,
+            'generate_invoice' => true,
+        ])->assertRedirect(route('bookings.index'));
+
+        $booking = Booking::first();
+        $this->assertDatabaseHas('invoices', [
+            'booking_id' => $booking->id,
+            'status' => InvoiceStatus::Unpaid->value,
+        ]);
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_walkin_overpayment_rolls_back_the_whole_booking()
+    {
+        $this->actingAsRole(UserRole::Staff);
+        $this->room->update(['monthly_price' => 1_000_000]);
+
+        $this->post(route('bookings.store'), [
+            'room_id' => $this->room->id,
+            'penyewa_id' => $this->penyewa->id,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-09-01',
+            'status' => BookingStatus::CheckedIn->value,
+            'pay_now' => true,
+            'pay_amount' => 999_999_999,
+            'pay_method' => PaymentMethod::Cash->value,
+        ])->assertSessionHasErrors('pay_amount');
+
+        $this->assertDatabaseCount('bookings', 0);
+        $this->assertDatabaseCount('invoices', 0);
+        $this->assertDatabaseCount('payments', 0);
     }
 
     public function test_index_only_shows_current_branch_bookings()

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\FrontDesk;
 
 use App\Enums\BookingStatus;
+use App\Enums\PaymentMethod;
 use App\Support\BranchContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -35,6 +36,10 @@ class BookingRequest extends FormRequest
             'end_date' => ['required', 'date', 'after:start_date'],
             'status' => ['nullable', new Enum(BookingStatus::class)],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'generate_invoice' => ['nullable', 'boolean'],
+            'pay_now' => ['nullable', 'boolean'],
+            'pay_amount' => ['nullable', 'required_if_accepted:pay_now', 'integer', 'min:1'],
+            'pay_method' => ['nullable', 'required_if_accepted:pay_now', new Enum(PaymentMethod::class)],
         ];
     }
 
@@ -48,6 +53,8 @@ class BookingRequest extends FormRequest
             'penyewa_id' => 'penyewa',
             'start_date' => 'tanggal mulai',
             'end_date' => 'tanggal selesai',
+            'pay_amount' => 'jumlah pembayaran',
+            'pay_method' => 'metode pembayaran',
         ];
     }
 }

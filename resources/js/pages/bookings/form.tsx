@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -25,6 +26,7 @@ type PageProps = {
     roomOptions: SelectOption[];
     penyewaOptions: SelectOption[];
     statusOptions: SelectOption[];
+    paymentMethods: SelectOption[];
 };
 
 type Mode = 'reserve' | 'walkin';
@@ -41,6 +43,7 @@ export default function BookingForm({
     roomOptions,
     penyewaOptions,
     statusOptions,
+    paymentMethods,
 }: PageProps) {
     const { data, setData, post, processing, errors } = useForm({
         room_id: '',
@@ -49,6 +52,10 @@ export default function BookingForm({
         end_date: '',
         status: 'confirmed',
         notes: '',
+        generate_invoice: true as boolean,
+        pay_now: false as boolean,
+        pay_amount: '',
+        pay_method: String(paymentMethods[0]?.value ?? 'cash'),
     });
 
     const [mode, setMode] = useState<Mode>('reserve');
@@ -98,7 +105,12 @@ export default function BookingForm({
                 start_date: prev.start_date || todayIso(),
             }));
         } else {
-            setData('status', 'confirmed');
+            // Inline "pay now" is a walk-in affordance only.
+            setData((prev) => ({
+                ...prev,
+                status: 'confirmed',
+                pay_now: false,
+            }));
         }
     };
 
@@ -379,10 +391,149 @@ export default function BookingForm({
                             <InputError message={errors.notes} />
                         </div>
 
+                        {/* Tagihan & pembayaran */}
+                        <div className="space-y-3 rounded-lg border p-4">
+                            <div className="flex items-start gap-3">
+                                <Checkbox
+                                    id="generate_invoice"
+                                    className="mt-0.5"
+                                    checked={data.generate_invoice}
+                                    onCheckedChange={(value) => {
+                                        const checked = value === true;
+                                        setData((prev) => ({
+                                            ...prev,
+                                            generate_invoice: checked,
+                                            pay_now: checked
+                                                ? prev.pay_now
+                                                : false,
+                                        }));
+                                    }}
+                                />
+                                <div className="space-y-0.5">
+                                    <Label
+                                        htmlFor="generate_invoice"
+                                        className="cursor-pointer"
+                                    >
+                                        Bikin tagihan bulan ini
+                                    </Label>
+                                    {selectedRoom?.monthly_price != null && (
+                                        <p className="text-xs text-muted-foreground">
+                                            Tagihan:{' '}
+                                            {formatRupiah(
+                                                selectedRoom.monthly_price,
+                                            )}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {mode === 'walkin' && data.generate_invoice && (
+                                <div className="space-y-3 border-t pt-3">
+                                    <div className="flex items-center gap-3">
+                                        <Checkbox
+                                            id="pay_now"
+                                            checked={data.pay_now}
+                                            onCheckedChange={(value) => {
+                                                const checked = value === true;
+                                                setData((prev) => ({
+                                                    ...prev,
+                                                    pay_now: checked,
+                                                    pay_amount:
+                                                        checked &&
+                                                        !prev.pay_amount
+                                                            ? String(
+                                                                  selectedRoom?.monthly_price ??
+                                                                      '',
+                                                              )
+                                                            : prev.pay_amount,
+                                                }));
+                                            }}
+                                        />
+                                        <Label
+                                            htmlFor="pay_now"
+                                            className="cursor-pointer"
+                                        >
+                                            Bayar sekarang
+                                        </Label>
+                                    </div>
+
+                                    {data.pay_now && (
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="pay_amount">
+                                                    Jumlah
+                                                </Label>
+                                                <Input
+                                                    id="pay_amount"
+                                                    type="number"
+                                                    min={1}
+                                                    max={
+                                                        selectedRoom?.monthly_price ??
+                                                        undefined
+                                                    }
+                                                    value={data.pay_amount}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'pay_amount',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.pay_amount}
+                                                />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="pay_method">
+                                                    Metode
+                                                </Label>
+                                                <Select
+                                                    value={data.pay_method}
+                                                    onValueChange={(value) =>
+                                                        setData(
+                                                            'pay_method',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger id="pay_method">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {paymentMethods.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        option.value
+                                                                    }
+                                                                    value={String(
+                                                                        option.value,
+                                                                    )}
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError
+                                                    message={errors.pay_method}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex items-center gap-3 pt-2">
                             <Button type="submit" disabled={processing}>
                                 {mode === 'walkin'
-                                    ? 'Check-in Sekarang'
+                                    ? data.pay_now
+                                        ? 'Check-in & Bayar'
+                                        : 'Check-in Sekarang'
                                     : 'Simpan'}
                             </Button>
                             <Button
