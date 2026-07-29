@@ -1,4 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
+import { CalendarRange, Table2 } from 'lucide-react';
+import { BookingTimeline } from '@/components/bookings/booking-timeline';
 import { PageHeader } from '@/components/master/page-header';
 import { Pagination } from '@/components/master/pagination';
 import { ColorBadge } from '@/components/master/status-badge';
@@ -11,17 +13,23 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCan } from '@/hooks/use-can';
 import { formatDate, formatRupiah } from '@/lib/format';
 import bookings from '@/routes/bookings';
-import type { BookingListItem, Paginated } from '@/types';
+import type {
+    BookingCalendar,
+    BookingListItem,
+    Paginated,
+} from '@/types/master';
 
 type PageProps = {
     bookings: Paginated<BookingListItem>;
+    calendar: BookingCalendar;
 };
 
 export default function BookingsIndex() {
-    const { bookings: data } = usePage<PageProps>().props;
+    const { bookings: data, calendar } = usePage<PageProps>().props;
     const canManage = useCan('booking.manage');
 
     return (
@@ -38,66 +46,97 @@ export default function BookingsIndex() {
                     }
                 />
 
-                <Card>
-                    <CardContent className="px-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Kamar</TableHead>
-                                    <TableHead>Penyewa</TableHead>
-                                    <TableHead>Mulai</TableHead>
-                                    <TableHead>Selesai</TableHead>
-                                    <TableHead>Harga / Bulan</TableHead>
-                                    <TableHead>Status</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {data.data.length === 0 && (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={6}
-                                            className="py-10 text-center text-muted-foreground"
-                                        >
-                                            Belum ada booking.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                                {data.data.map((booking) => (
-                                    <TableRow key={booking.id}>
-                                        <TableCell className="font-medium">
-                                            {booking.room ?? '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {booking.penyewa ?? '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {formatDate(booking.start_date)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {formatDate(booking.end_date)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {formatRupiah(booking.monthly_price)}
-                                        </TableCell>
-                                        <TableCell>
-                                            <ColorBadge
-                                                label={booking.status_label}
-                                                color={booking.status_color}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                <Tabs defaultValue="calendar" className="flex flex-col gap-4">
+                    <TabsList>
+                        <TabsTrigger value="calendar">
+                            <CalendarRange className="size-4" />
+                            Kalender
+                        </TabsTrigger>
+                        <TabsTrigger value="table">
+                            <Table2 className="size-4" />
+                            Tabel
+                        </TabsTrigger>
+                    </TabsList>
 
-                <Pagination
-                    links={data.links}
-                    from={data.from}
-                    to={data.to}
-                    total={data.total}
-                />
+                    <TabsContent value="calendar">
+                        <Card>
+                            <CardContent>
+                                <BookingTimeline calendar={calendar} />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="table" className="flex flex-col gap-6">
+                        <Card>
+                            <CardContent className="px-0">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Kamar</TableHead>
+                                            <TableHead>Penyewa</TableHead>
+                                            <TableHead>Mulai</TableHead>
+                                            <TableHead>Selesai</TableHead>
+                                            <TableHead>Harga / Bulan</TableHead>
+                                            <TableHead>Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {data.data.length === 0 && (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={6}
+                                                    className="py-10 text-center text-muted-foreground"
+                                                >
+                                                    Belum ada booking.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                        {data.data.map((booking) => (
+                                            <TableRow key={booking.id}>
+                                                <TableCell className="font-medium">
+                                                    {booking.room ?? '—'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {booking.penyewa ?? '—'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatDate(
+                                                        booking.start_date,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatDate(booking.end_date)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatRupiah(
+                                                        booking.monthly_price,
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <ColorBadge
+                                                        label={
+                                                            booking.status_label
+                                                        }
+                                                        color={
+                                                            booking.status_color
+                                                        }
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+
+                        <Pagination
+                            links={data.links}
+                            from={data.from}
+                            to={data.to}
+                            total={data.total}
+                        />
+                    </TabsContent>
+                </Tabs>
             </div>
         </>
     );

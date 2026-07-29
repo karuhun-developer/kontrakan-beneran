@@ -88,6 +88,23 @@ class BookingControllerTest extends TestCase
         $this->assertDatabaseCount('bookings', 1);
     }
 
+    public function test_calendar_positions_booking_within_month_window()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        Booking::factory()->forRoom($this->room, '2026-08-05', '2026-08-20')->create();
+
+        $this->get(route('bookings.index', ['month' => '2026-08']))
+            ->assertInertia(fn ($page) => $page
+                ->component('bookings/index')
+                ->where('calendar.month', '2026-08')
+                ->where('calendar.days_in_month', 31)
+                ->has('calendar.rooms', 1)
+                ->where('calendar.rooms.0.bars.0.start_index', 4)
+                ->where('calendar.rooms.0.bars.0.span', 15)
+            );
+    }
+
     public function test_index_only_shows_current_branch_bookings()
     {
         $this->actingAsRole(UserRole::Staff);

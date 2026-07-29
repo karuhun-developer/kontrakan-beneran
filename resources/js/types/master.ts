@@ -75,3 +75,41 @@ export type BookingListItem = {
     status_label: string;
     status_color: string;
 };
+
+export type CalendarDay = {
+    day: number;
+    weekday: string;
+    is_weekend: boolean;
+    is_today: boolean;
+};
+
+export type TimelineBar = {
+    id: number;
+    penyewa: string;
+    start_index: number;
+    span: number;
+    status: string;
+    status_label: string;
+    status_color: string;
+    start_date: string;
+    end_date: string;
+    continues_before: boolean;
+    continues_after: boolean;
+};
+
+export type TimelineRoom = {
+    id: number;
+    number: string;
+    name: string | null;
+    bars: TimelineBar[];
+};
+
+export type BookingCalendar = {
+    month: string;
+    month_label: string;
+    days_in_month: number;
+    prev_month: string;
+    next_month: string;
+    days: CalendarDay[];
+    rooms: TimelineRoom[];
+};

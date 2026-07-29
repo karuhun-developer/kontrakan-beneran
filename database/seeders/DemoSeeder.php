@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Enums\BookingStatus;
 use App\Enums\CommonStatus;
 use App\Enums\RoomStatus;
 use App\Enums\UserRole;
+use App\Models\Booking;
 use App\Models\Branch;
 use App\Models\Facility;
 use App\Models\Penyewa;
@@ -124,6 +126,68 @@ class DemoSeeder extends Seeder
 
         $this->seedMasterData($branchPusat);
         $this->seedMasterData($branchSelatan);
+
+        $this->seedBookings($branchPusat);
+    }
+
+    /**
+     * Seed a handful of bookings around the current month so the front-desk
+     * timeline has data to display.
+     */
+    private function seedBookings(Branch $branch): void
+    {
+        $monthStart = now()->startOfMonth();
+
+        $rooms = Room::forBranch($branch->id)->orderBy('number')->take(5)->get();
+
+        if ($rooms->count() < 5) {
+            return;
+        }
+
+        $plan = [
+            ['name' => 'Rangga Wijaya', 'room' => 0, 'start' => 0, 'length' => 60, 'status' => BookingStatus::Confirmed],
+            ['name' => 'Sinta Dewi', 'room' => 1, 'start' => 4, 'length' => 20, 'status' => BookingStatus::CheckedIn],
+            ['name' => 'Bagas Pratama', 'room' => 3, 'start' => 10, 'length' => 40, 'status' => BookingStatus::Pending],
+            ['name' => 'Nadia Putri', 'room' => 4, 'start' => -5, 'length' => 17, 'status' => BookingStatus::CheckedIn],
+        ];
+
+        foreach ($plan as $index => $item) {
+            $room = $rooms[$item['room']];
+
+            $penyewa = Penyewa::firstOrCreate(
+                ['tenant_id' => $branch->tenant_id, 'name' => $item['name']],
+                [
+                    'branch_id' => $branch->id,
+                    'phone' => '0812-0000-'.str_pad((string) $index, 4, '0', STR_PAD_LEFT),
+                    'id_card_number' => '31710000000100'.str_pad((string) $index, 2, '0', STR_PAD_LEFT),
+                    'gender' => $index % 2 === 0 ? 'male' : 'female',
+                    'status' => CommonStatus::Active,
+                ],
+            );
+
+            $start = $monthStart->copy()->addDays($item['start']);
+            $end = $start->copy()->addDays($item['length']);
+
+            $alreadySeeded = Booking::where('branch_id', $branch->id)
+                ->where('room_id', $room->id)
+                ->whereDate('start_date', $start)
+                ->exists();
+
+            if ($alreadySeeded) {
+                continue;
+            }
+
+            Booking::create([
+                'tenant_id' => $branch->tenant_id,
+                'branch_id' => $branch->id,
+                'room_id' => $room->id,
+                'penyewa_id' => $penyewa->id,
+                'start_date' => $start,
+                'end_date' => $end,
+                'monthly_price' => $room->effective_monthly_price,
+                'status' => $item['status'],
+            ]);
+        }
     }
 
     /**
