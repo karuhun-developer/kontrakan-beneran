@@ -101,13 +101,14 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Unread count plus the most recent notifications for the header bell.
-     * Only staff use the admin shell, so guests and portal users get nothing.
+     * Shared by both shells — the admin bell and the portal bell each resolve
+     * their own links from this same feed. Guests get nothing.
      *
      * @return array{unread_count: int, recent: list<array<string, mixed>>}
      */
     private function notificationsFor(?User $user): array
     {
-        if (! $user || ! $user->isStaff()) {
+        if (! $user) {
             return ['unread_count' => 0, 'recent' => []];
         }
 

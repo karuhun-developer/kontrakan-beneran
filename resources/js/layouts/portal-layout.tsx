@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { PortalNotificationBell } from '@/components/portal-notification-bell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,6 +66,7 @@ export default function PortalLayout({
                     </Link>
 
                     <div className="ml-auto flex items-center gap-2">
+                        <PortalNotificationBell />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button

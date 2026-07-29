@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Notifications\InvoiceDueReminder;
+use App\Notifications\PenyewaInvoiceDueReminder;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
@@ -38,13 +39,19 @@ class SendDueInvoiceReminders
                 ->whereIn('status', InvoiceStatus::outstanding())
                 ->whereDate('due_date', $dueDate)
                 ->whereDoesntHave('reminders', fn ($query) => $query->where('days_before', $daysBefore))
-                ->with('penyewa:id,name', 'branch')
+                ->with('penyewa.user', 'branch')
                 ->cursor()
                 ->each(function (Invoice $invoice) use ($daysBefore, &$sent): void {
                     $recipients = $this->recipientsFor($invoice);
 
                     if ($recipients->isNotEmpty()) {
                         Notification::send($recipients, new InvoiceDueReminder($invoice, $daysBefore));
+                    }
+
+                    $portalUser = $invoice->penyewa?->user;
+
+                    if ($portalUser !== null) {
+                        $portalUser->notify(new PenyewaInvoiceDueReminder($invoice, $daysBefore));
                     }
 
                     $invoice->reminders()->create([

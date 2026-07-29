@@ -6,9 +6,11 @@ use App\Actions\Notification\SendDueInvoiceReminders;
 use App\Enums\InvoiceStatus;
 use App\Models\Branch;
 use App\Models\Invoice;
+use App\Models\Penyewa;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\InvoiceDueReminder;
+use App\Notifications\PenyewaInvoiceDueReminder;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -109,6 +111,34 @@ class InvoiceReminderTest extends TestCase
             $invoice->id,
             $this->staff->fresh()->notifications->first()->data['invoice_id'],
         );
+    }
+
+    public function test_notifies_the_penyewas_portal_user_with_a_penyewa_facing_reminder()
+    {
+        Notification::fake();
+
+        $portalUser = User::factory()->create(['tenant_id' => $this->tenant->id]);
+        $penyewa = Penyewa::factory()->forBranch($this->branch)->create([
+            'user_id' => $portalUser->id,
+        ]);
+
+        $this->invoiceDueInDays(3)->update(['penyewa_id' => $penyewa->id]);
+
+        app(SendDueInvoiceReminders::class)->handle(self::AS_OF);
+
+        Notification::assertSentToTimes($portalUser, PenyewaInvoiceDueReminder::class, 1);
+        Notification::assertNotSentTo($portalUser, InvoiceDueReminder::class);
+    }
+
+    public function test_does_not_notify_a_penyewa_without_a_portal_user()
+    {
+        Notification::fake();
+
+        $this->invoiceDueInDays(3);
+
+        app(SendDueInvoiceReminders::class)->handle(self::AS_OF);
+
+        Notification::assertSentTimes(PenyewaInvoiceDueReminder::class, 0);
     }
 
     public function test_notification_exposes_database_and_mail_channels()

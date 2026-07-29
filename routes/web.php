@@ -18,6 +18,7 @@ use App\Http\Controllers\Portal\DashboardController as PortalDashboardController
 use App\Http\Controllers\Portal\DepositController as PortalDepositController;
 use App\Http\Controllers\Portal\InvoiceController as PortalInvoiceController;
 use App\Http\Controllers\Portal\LaundryController as PortalLaundryController;
+use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\Portal\StayController as PortalStayController;
 use Illuminate\Support\Facades\Route;
 
@@ -160,6 +161,10 @@ Route::middleware(['auth', 'verified', 'role:penyewa'])->prefix('portal')->name(
 
     Route::get('stays', [PortalStayController::class, 'index'])->name('stays.index');
     Route::get('stays/{stay}', [PortalStayController::class, 'show'])->name('stays.show');
+
+    Route::get('notifications', [PortalNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [PortalNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('notifications/{notification}/read', [PortalNotificationController::class, 'markRead'])->name('notifications.read');
 });
 
 require __DIR__.'/settings.php';
