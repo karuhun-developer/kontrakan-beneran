@@ -1,6 +1,7 @@
 import { ModalRoot } from '@inertiaui/modal-react';
 import { Link, usePage } from '@inertiajs/react';
 import {
+    History,
     KeyRound,
     LayoutDashboard,
     ReceiptText,
@@ -24,6 +25,7 @@ import { dashboard as portalDashboard } from '@/routes/portal';
 import portalDeposits from '@/routes/portal/deposits';
 import portalInvoices from '@/routes/portal/invoices';
 import portalLaundry from '@/routes/portal/laundry';
+import portalStays from '@/routes/portal/stays';
 import { edit as securityEdit } from '@/routes/security';
 import type { BreadcrumbItem } from '@/types';
 
@@ -32,6 +34,7 @@ const navItems = [
     { label: 'Tagihan', icon: ReceiptText, href: portalInvoices.index().url },
     { label: 'Deposit', icon: Wallet, href: portalDeposits.index().url },
     { label: 'Laundry', icon: Shirt, href: portalLaundry.index().url },
+    { label: 'Riwayat', icon: History, href: portalStays.index().url },
 ];
 
 export default function PortalLayout({

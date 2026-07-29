@@ -63,6 +63,39 @@ export type PortalLaundryDetail = {
     notes: string | null;
 };
 
+export type PortalStayListItem = {
+    id: number;
+    room: string | null;
+    start_date: string;
+    end_date: string;
+    monthly_price: number;
+    status: string;
+    status_label: string;
+    status_color: string;
+};
+
+export type PortalStayLog = {
+    id: number;
+    event_label: string;
+    description: string | null;
+    occurred_on: string | null;
+};
+
+export type PortalStayDetail = {
+    id: number;
+    room: string | null;
+    start_date: string;
+    end_date: string;
+    monthly_price: number;
+    status: string;
+    status_label: string;
+    status_color: string;
+    checked_in_at: string | null;
+    checked_out_at: string | null;
+    notes: string | null;
+    logs: PortalStayLog[];
+};
+
 export type PortalInvoiceListItem = {
     id: number;
     number: string;

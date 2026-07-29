@@ -18,6 +18,7 @@ use App\Http\Controllers\Portal\DashboardController as PortalDashboardController
 use App\Http\Controllers\Portal\DepositController as PortalDepositController;
 use App\Http\Controllers\Portal\InvoiceController as PortalInvoiceController;
 use App\Http\Controllers\Portal\LaundryController as PortalLaundryController;
+use App\Http\Controllers\Portal\StayController as PortalStayController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -156,6 +157,9 @@ Route::middleware(['auth', 'verified', 'role:penyewa'])->prefix('portal')->name(
 
     Route::get('laundry', [PortalLaundryController::class, 'index'])->name('laundry.index');
     Route::get('laundry/{laundry}', [PortalLaundryController::class, 'show'])->name('laundry.show');
+
+    Route::get('stays', [PortalStayController::class, 'index'])->name('stays.index');
+    Route::get('stays/{stay}', [PortalStayController::class, 'show'])->name('stays.show');
 });
 
 require __DIR__.'/settings.php';
