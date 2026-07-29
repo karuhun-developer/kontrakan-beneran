@@ -7,9 +7,12 @@ use App\Models\User;
 use App\Services\Payments\PaymentGatewayManager;
 use App\Support\BranchContext;
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -38,6 +41,10 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::before(function (User $user): ?bool {
             return $user->isSuperAdmin() ? true : null;
+        });
+
+        RateLimiter::for('payment-webhook', function (Request $request): Limit {
+            return Limit::perMinute((int) config('payment.webhook_rate_limit'))->by($request->ip());
         });
     }
 

@@ -16,6 +16,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Webhook Rate Limit
+    |--------------------------------------------------------------------------
+    |
+    | Maximum gateway callbacks accepted per minute, per source IP. The webhook
+    | is public and unauthenticated (verified by signature), so this caps abuse
+    | while staying well above a gateway's legitimate retry volume.
+    |
+    */
+
+    'webhook_rate_limit' => (int) env('PAYMENT_WEBHOOK_RATE_LIMIT', 120),
+
+    /*
+    |--------------------------------------------------------------------------
     | Gateways
     |--------------------------------------------------------------------------
     |

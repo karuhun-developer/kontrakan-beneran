@@ -148,9 +148,12 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
 });
 
 /*
- * Payment gateway webhook (unauthenticated; verified by driver signature).
+ * Payment gateway webhook (unauthenticated; verified by driver signature,
+ * rate limited per source IP against abuse).
  */
-Route::post('webhooks/payment', [GatewayWebhookController::class, 'handle'])->name('webhooks.payment');
+Route::post('webhooks/payment', [GatewayWebhookController::class, 'handle'])
+    ->middleware('throttle:payment-webhook')
+    ->name('webhooks.payment');
 
 /*
  * Penyewa portal.

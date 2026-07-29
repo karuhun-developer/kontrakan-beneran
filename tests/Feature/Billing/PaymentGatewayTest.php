@@ -181,6 +181,24 @@ class PaymentGatewayTest extends TestCase
         $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
     }
 
+    public function test_webhook_endpoint_is_rate_limited_per_ip()
+    {
+        config()->set('payment.default', 'null');
+        config()->set('payment.webhook_rate_limit', 3);
+
+        $payload = [
+            'order_id' => 'KOSTPRO-UNKNOWN',
+            'transaction_status' => 'settlement',
+            'gross_amount' => '1000000.00',
+        ];
+
+        for ($i = 0; $i < 3; $i++) {
+            $this->postJson(route('webhooks.payment'), $payload)->assertOk();
+        }
+
+        $this->postJson(route('webhooks.payment'), $payload)->assertStatus(429);
+    }
+
     public function test_midtrans_rejects_a_forged_signature()
     {
         $gateway = new MidtransGateway(['server_key' => 'secret-key']);
