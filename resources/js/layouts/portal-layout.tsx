@@ -1,5 +1,6 @@
 import { ModalRoot } from '@inertiaui/modal-react';
 import { Link, usePage } from '@inertiajs/react';
+import { LayoutDashboard, ReceiptText } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,7 +13,15 @@ import {
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useInitials } from '@/hooks/use-initials';
+import { cn } from '@/lib/utils';
+import { dashboard as portalDashboard } from '@/routes/portal';
+import portalInvoices from '@/routes/portal/invoices';
 import type { BreadcrumbItem } from '@/types';
+
+const navItems = [
+    { label: 'Dashboard', icon: LayoutDashboard, href: portalDashboard().url },
+    { label: 'Tagihan', icon: ReceiptText, href: portalInvoices.index().url },
+];
 
 export default function PortalLayout({
     children,
@@ -22,6 +31,7 @@ export default function PortalLayout({
     breadcrumbs?: BreadcrumbItem[];
 }) {
     const { auth } = usePage().props;
+    const currentUrl = usePage().url;
     const getInitials = useInitials();
 
     useFlashToast();
@@ -67,6 +77,33 @@ export default function PortalLayout({
                     </div>
                 </div>
             </header>
+
+            <nav className="border-b border-sidebar-border/70">
+                <div className="mx-auto flex w-full items-center gap-1 px-4 md:max-w-5xl">
+                    {navItems.map((item) => {
+                        const active =
+                            item.href === '/portal'
+                                ? currentUrl === '/portal'
+                                : currentUrl.startsWith(item.href);
+
+                        return (
+                            <Link
+                                key={item.label}
+                                href={item.href}
+                                className={cn(
+                                    'flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium transition-colors',
+                                    active
+                                        ? 'border-primary text-foreground'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground',
+                                )}
+                            >
+                                <item.icon className="size-4" />
+                                {item.label}
+                            </Link>
+                        );
+                    })}
+                </div>
+            </nav>
 
             {breadcrumbs.length > 1 && (
                 <div className="border-b border-sidebar-border/70">

@@ -15,6 +15,7 @@ use App\Http\Controllers\Master\RoomController;
 use App\Http\Controllers\Master\RoomTypeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Portal\DashboardController as PortalDashboardController;
+use App\Http\Controllers\Portal\InvoiceController as PortalInvoiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -139,6 +140,10 @@ Route::post('webhooks/payment', [GatewayWebhookController::class, 'handle'])->na
  */
 Route::middleware(['auth', 'verified', 'role:penyewa'])->prefix('portal')->name('portal.')->group(function () {
     Route::get('/', PortalDashboardController::class)->name('dashboard');
+
+    Route::get('invoices', [PortalInvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('invoices/{invoice}', [PortalInvoiceController::class, 'show'])->name('invoices.show');
+    Route::post('invoices/{invoice}/checkout', [PortalInvoiceController::class, 'checkout'])->name('invoices.checkout');
 });
 
 require __DIR__.'/settings.php';
