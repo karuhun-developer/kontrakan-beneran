@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { BranchContext, FlashMessages, TenantSummary } from '@/types/branch';
 
 declare module 'react' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -12,6 +13,9 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             auth: Auth;
+            tenant: TenantSummary | null;
+            branchContext: BranchContext;
+            flash: FlashMessages;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };
