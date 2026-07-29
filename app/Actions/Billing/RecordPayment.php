@@ -13,6 +13,8 @@ use Illuminate\Validation\ValidationException;
 
 class RecordPayment
 {
+    public function __construct(private RecordCashflowFromPayment $recordCashflow) {}
+
     /**
      * Record a settled payment against an invoice and re-sync the invoice
      * status (unpaid → partial → paid). Manual methods settle immediately.
@@ -66,6 +68,8 @@ class RecordPayment
             ]);
 
             $invoice->refreshPaymentStatus()->save();
+
+            $this->recordCashflow->handle($payment);
 
             return $payment;
         });
