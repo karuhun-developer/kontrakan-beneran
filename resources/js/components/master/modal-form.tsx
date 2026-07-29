@@ -1,7 +1,8 @@
 import { Modal } from '@inertiaui/modal-react';
 import { X } from 'lucide-react';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ModalContainerContext } from '@/lib/modal-container';
 
 type ModalFormProps = {
     title: string;
@@ -19,6 +20,8 @@ type ModalFormProps = {
  * render our own aligned with the header title.
  */
 export function ModalForm({ title, description, children }: ModalFormProps) {
+    const [panel, setPanel] = useState<HTMLElement | null>(null);
+
     return (
         <Modal
             slideover
@@ -26,7 +29,8 @@ export function ModalForm({ title, description, children }: ModalFormProps) {
             panelClasses="bg-background text-foreground min-h-screen flex flex-col"
         >
             {({ close }: { close: () => void }) => (
-                <div className="flex min-h-screen flex-col">
+                <ModalContainerContext.Provider value={panel}>
+                <div ref={setPanel} className="flex min-h-screen flex-col">
                     <header className="flex items-start justify-between gap-4 border-b px-8 py-6">
                         <div className="space-y-1">
                             <h2 className="text-lg font-semibold tracking-tight">
@@ -53,6 +57,7 @@ export function ModalForm({ title, description, children }: ModalFormProps) {
                         {children(close)}
                     </div>
                 </div>
+                </ModalContainerContext.Provider>
             )}
         </Modal>
     );
