@@ -78,8 +78,8 @@ class NotificationControllerTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertInertia(fn ($page) => $page
-                ->where('notifications.unread_count', 1)
-                ->has('notifications.recent', 1)
+                ->where('notificationFeed.unread_count', 1)
+                ->has('notificationFeed.recent', 1)
             );
     }
 

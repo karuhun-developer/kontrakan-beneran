@@ -17,7 +17,7 @@ declare module '@inertiajs/core' {
             tenant: TenantSummary | null;
             branchContext: BranchContext;
             flash: FlashMessages;
-            notifications: NotificationFeed;
+            notificationFeed: NotificationFeed;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

@@ -15,7 +15,7 @@ import notifications from '@/routes/notifications';
 import type { NotificationItem } from '@/types/notification';
 
 export function NotificationBell() {
-    const { notifications: feed } = usePage().props;
+    const { notificationFeed: feed } = usePage().props;
     const { unread_count: unreadCount, recent } = feed;
 
     const openNotification = (item: NotificationItem) => {
