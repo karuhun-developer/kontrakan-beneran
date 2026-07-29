@@ -50,9 +50,16 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
      * Front desk (Fase 2). Booking date-range with availability guard.
      */
     Route::resource('bookings', BookingController::class)
-        ->only(['index', 'create', 'store'])
-        ->middlewareFor(['index'], 'permission:booking.view')
+        ->only(['index', 'create', 'store', 'show'])
+        ->middlewareFor(['index', 'show'], 'permission:booking.view')
         ->middlewareFor(['create', 'store'], 'permission:booking.manage');
+
+    Route::middleware('permission:booking.manage')->group(function () {
+        Route::post('bookings/{booking}/check-in', [BookingController::class, 'checkIn'])->name('bookings.check-in');
+        Route::post('bookings/{booking}/check-out', [BookingController::class, 'checkOut'])->name('bookings.check-out');
+        Route::post('bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+        Route::post('bookings/{booking}/extend', [BookingController::class, 'extend'])->name('bookings.extend');
+    });
 });
 
 /*

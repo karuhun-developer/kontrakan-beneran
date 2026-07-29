@@ -76,6 +76,36 @@ export type BookingListItem = {
     status_color: string;
 };
 
+export type BookingLogItem = {
+    id: number;
+    event: string;
+    event_label: string;
+    description: string | null;
+    user: string | null;
+    created_at: string | null;
+};
+
+export type BookingDetail = {
+    id: number;
+    room: string;
+    penyewa: string;
+    penyewa_phone: string | null;
+    start_date: string;
+    end_date: string;
+    monthly_price: number;
+    status: string;
+    status_label: string;
+    status_color: string;
+    notes: string | null;
+    checked_in_at: string | null;
+    checked_out_at: string | null;
+    can_check_in: boolean;
+    can_check_out: boolean;
+    can_cancel: boolean;
+    can_extend: boolean;
+    logs: BookingLogItem[];
+};
+
 export type CalendarDay = {
     day: number;
     weekday: string;

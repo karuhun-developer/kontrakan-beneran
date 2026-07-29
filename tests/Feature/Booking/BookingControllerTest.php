@@ -105,6 +105,33 @@ class BookingControllerTest extends TestCase
             );
     }
 
+    public function test_staff_can_check_in_a_booking_via_endpoint()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        $booking = Booking::factory()
+            ->forRoom($this->room, '2026-08-01', '2026-09-01')
+            ->status(BookingStatus::Confirmed)
+            ->create();
+
+        $this->post(route('bookings.check-in', $booking))->assertRedirect();
+
+        $this->assertSame(
+            BookingStatus::CheckedIn,
+            $booking->fresh()->status,
+        );
+    }
+
+    public function test_cannot_act_on_a_booking_from_another_branch()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        $otherBranch = Branch::factory()->create(['tenant_id' => $this->tenant->id]);
+        $booking = Booking::factory()->forBranch($otherBranch)->create();
+
+        $this->post(route('bookings.check-in', $booking))->assertNotFound();
+    }
+
     public function test_index_only_shows_current_branch_bookings()
     {
         $this->actingAsRole(UserRole::Staff);

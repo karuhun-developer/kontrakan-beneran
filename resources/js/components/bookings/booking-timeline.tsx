@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { ModalLink } from '@inertiaui/modal-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Fragment } from 'react';
 import { Button } from '@/components/ui/button';
@@ -162,8 +163,12 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                                             >
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <button
-                                                            type="button"
+                                                        <ModalLink
+                                                            href={
+                                                                bookings.show(
+                                                                    bar.id,
+                                                                ).url
+                                                            }
                                                             className={cn(
                                                                 'flex h-full w-full items-center gap-1 truncate rounded-md px-2 text-xs font-medium shadow-sm transition',
                                                                 barColorClasses[
@@ -180,7 +185,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                                                             <span className="truncate">
                                                                 {bar.penyewa}
                                                             </span>
-                                                        </button>
+                                                        </ModalLink>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p className="font-medium">

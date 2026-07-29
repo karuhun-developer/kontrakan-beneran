@@ -1,9 +1,11 @@
 import { Head, usePage } from '@inertiajs/react';
-import { CalendarRange, Table2 } from 'lucide-react';
+import { ModalLink } from '@inertiaui/modal-react';
+import { CalendarRange, Eye, Table2 } from 'lucide-react';
 import { BookingTimeline } from '@/components/bookings/booking-timeline';
 import { PageHeader } from '@/components/master/page-header';
 import { Pagination } from '@/components/master/pagination';
 import { ColorBadge } from '@/components/master/status-badge';
+import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -78,13 +80,14 @@ export default function BookingsIndex() {
                                             <TableHead>Selesai</TableHead>
                                             <TableHead>Harga / Bulan</TableHead>
                                             <TableHead>Status</TableHead>
+                                            <TableHead className="w-12" />
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {data.data.length === 0 && (
                                             <TableRow>
                                                 <TableCell
-                                                    colSpan={6}
+                                                    colSpan={7}
                                                     className="py-10 text-center text-muted-foreground"
                                                 >
                                                     Belum ada booking.
@@ -121,6 +124,26 @@ export default function BookingsIndex() {
                                                             booking.status_color
                                                         }
                                                     />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <ModalLink
+                                                        href={
+                                                            bookings.show(
+                                                                booking.id,
+                                                            ).url
+                                                        }
+                                                        className={buttonVariants(
+                                                            {
+                                                                variant: 'ghost',
+                                                                size: 'icon',
+                                                            },
+                                                        )}
+                                                    >
+                                                        <Eye className="size-4" />
+                                                        <span className="sr-only">
+                                                            Detail
+                                                        </span>
+                                                    </ModalLink>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

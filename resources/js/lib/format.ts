@@ -24,3 +24,22 @@ export function formatDate(value: string | null | undefined): string {
 
     return Number.isNaN(parsed.getTime()) ? '—' : dateFormatter.format(parsed);
 }
+
+const dateTimeFormatter = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+});
+
+/** Format a datetime string (YYYY-MM-DD HH:MM:SS) as an Indonesian date-time. */
+export function formatDateTime(value: string | null | undefined): string {
+    if (!value) {
+        return '—';
+    }
+
+    const parsed = new Date(value.replace(' ', 'T'));
+
+    return Number.isNaN(parsed.getTime()) ? '—' : dateTimeFormatter.format(parsed);
+}

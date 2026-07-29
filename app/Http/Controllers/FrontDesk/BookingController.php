@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\FrontDesk;
 
+use App\Actions\Booking\CancelBooking;
+use App\Actions\Booking\CheckInBooking;
+use App\Actions\Booking\CheckOutBooking;
 use App\Actions\Booking\CreateBooking;
+use App\Actions\Booking\ExtendBooking;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentBranch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FrontDesk\BookingRequest;
 use App\Models\Booking;
+use App\Models\BookingLog;
 use App\Models\Branch;
 use App\Models\Penyewa;
 use App\Models\Room;
@@ -160,6 +165,89 @@ class BookingController extends Controller
         );
 
         return to_route('bookings.index')->with('success', 'Booking berhasil dibuat.');
+    }
+
+    public function show(Booking $booking): Modal
+    {
+        $booking = $this->findInBranch($booking->getKey());
+        $booking->load(['room:id,number,name', 'penyewa:id,name,phone', 'logs.user:id,name']);
+
+        return Inertia::modal('bookings/detail', [
+            'booking' => [
+                'id' => $booking->id,
+                'room' => $booking->room ? trim("{$booking->room->number} {$booking->room->name}") : '—',
+                'penyewa' => $booking->penyewa?->name ?? '—',
+                'penyewa_phone' => $booking->penyewa?->phone,
+                'start_date' => $booking->start_date->toDateString(),
+                'end_date' => $booking->end_date->toDateString(),
+                'monthly_price' => $booking->monthly_price,
+                'status' => $booking->status->value,
+                'status_label' => $booking->status->label(),
+                'status_color' => $booking->status->color(),
+                'notes' => $booking->notes,
+                'checked_in_at' => $booking->checked_in_at?->toDateTimeString(),
+                'checked_out_at' => $booking->checked_out_at?->toDateTimeString(),
+                'can_check_in' => $booking->status->canCheckIn(),
+                'can_check_out' => $booking->status->canCheckOut(),
+                'can_cancel' => $booking->status->canCancel(),
+                'can_extend' => $booking->status->canExtend(),
+                'logs' => $booking->logs
+                    ->sortByDesc('created_at')
+                    ->values()
+                    ->map(fn (BookingLog $log): array => [
+                        'id' => $log->id,
+                        'event' => $log->event->value,
+                        'event_label' => $log->event->label(),
+                        'description' => $log->description,
+                        'user' => $log->user?->name,
+                        'created_at' => $log->created_at?->toDateTimeString(),
+                    ]),
+            ],
+        ])->baseRoute('bookings.index');
+    }
+
+    public function checkIn(Request $request, Booking $booking, CheckInBooking $action): RedirectResponse
+    {
+        $action->handle($this->findInBranch($booking->getKey()), $request->user());
+
+        return back()->with('success', 'Penyewa berhasil check-in.');
+    }
+
+    public function checkOut(Request $request, Booking $booking, CheckOutBooking $action): RedirectResponse
+    {
+        $action->handle($this->findInBranch($booking->getKey()), $request->user());
+
+        return back()->with('success', 'Penyewa berhasil check-out.');
+    }
+
+    public function cancel(Request $request, Booking $booking, CancelBooking $action): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $action->handle($this->findInBranch($booking->getKey()), $validated['reason'] ?? null, $request->user());
+
+        return back()->with('success', 'Booking dibatalkan.');
+    }
+
+    public function extend(Request $request, Booking $booking, ExtendBooking $action): RedirectResponse
+    {
+        $validated = $request->validate([
+            'end_date' => ['required', 'date'],
+        ], [], ['end_date' => 'tanggal perpanjangan']);
+
+        $action->handle($this->findInBranch($booking->getKey()), $validated['end_date'], $request->user());
+
+        return back()->with('success', 'Sewa berhasil diperpanjang.');
+    }
+
+    /**
+     * Resolve a booking within the active branch or abort with 404.
+     */
+    private function findInBranch(int $bookingId): Booking
+    {
+        return Booking::forBranch($this->currentBranch()->id)->findOrFail($bookingId);
     }
 
     /**

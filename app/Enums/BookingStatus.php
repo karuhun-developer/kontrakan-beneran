@@ -45,6 +45,38 @@ enum BookingStatus: string
     }
 
     /**
+     * Whether the booking can be checked in from this status.
+     */
+    public function canCheckIn(): bool
+    {
+        return $this === self::Pending || $this === self::Confirmed;
+    }
+
+    /**
+     * Whether the booking can be checked out from this status.
+     */
+    public function canCheckOut(): bool
+    {
+        return $this === self::CheckedIn;
+    }
+
+    /**
+     * Whether the booking can be cancelled from this status (before check-in).
+     */
+    public function canCancel(): bool
+    {
+        return $this === self::Pending || $this === self::Confirmed;
+    }
+
+    /**
+     * Whether the booking's stay can be extended from this status.
+     */
+    public function canExtend(): bool
+    {
+        return $this === self::Confirmed || $this === self::CheckedIn;
+    }
+
+    /**
      * Statuses that hold a room for its date range.
      *
      * @return list<self>
