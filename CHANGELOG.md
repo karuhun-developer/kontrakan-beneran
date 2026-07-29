@@ -12,7 +12,9 @@ dan proyek ini menganut [Semantic Versioning](https://semver.org/lang/id/).
 Roadmap fitur (lihat [`PRD.md`](./PRD.md) §8). Item dipindahkan ke versi rilis saat selesai.
 
 ### Sedang dikerjakan
-- **Fase 2 — Domain booking (inti):** enum `BookingStatus` (pending/confirmed/checked_in/checked_out/cancelled + label/warna/`blocksAvailability`), model & migrasi `Booking` (date-range, snapshot harga, relasi room/penyewa, scope `active`/`forRoom`/`overlapping`), engine anti double-booking `RoomAvailability` (overlap half-open `[start, end)` per kamar, dukung `ignoreBookingId` untuk perpanjang), factory + 8 test. Front desk/UI & perpanjang menyusul.
+- **Fase 2 — Domain booking (inti):** enum `BookingStatus` (pending/confirmed/checked_in/checked_out/cancelled + label/warna/`blocksAvailability`), model & migrasi `Booking` (date-range, snapshot harga, relasi room/penyewa, scope `active`/`forRoom`/`overlapping`), engine anti double-booking `RoomAvailability` (overlap half-open `[start, end)` per kamar, dukung `ignoreBookingId` untuk perpanjang), factory + 8 test.
+- **Fase 2 — Action & histori booking:** enum `BookingEvent` + model/migrasi `BookingLog` (histori per booking, `meta` json), action `CreateBooking` (enforce availability, snapshot harga efektif kamar, sinkron `room_status` reserved/occupied, tulis log `created`, transaksi DB), relasi `logs()` di `Booking`, +6 test. Front desk/UI, check-in/out & perpanjang menyusul.
+- **Fase 2 — Front Desk (MVP booking):** menu **Operasional › Booking** — daftar reservasi per cabang + form slideover buat booking (pilih kamar/penyewa, rentang tanggal, status, catatan) dengan cek ketersediaan otomatis dan tampilan snapshot harga. Permission `booking.view`/`booking.manage` (Owner/Admin/Staff), `BookingController` (index/create/store) + `BookingRequest`, rute resource `bookings`, halaman Inertia `bookings/index` & `bookings/form`, helper `formatDate`, +3 test controller.
 
 ### Direncanakan
 - **Fase 2 — Booking & Front Desk:** availability engine (anti double-booking), booking date-range, grid front desk, check-in/out, perpanjang sewa + log.

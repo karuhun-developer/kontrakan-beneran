@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import {
     BedDouble,
     BookOpen,
+    CalendarCheck,
     FolderGit2,
     LayoutGrid,
     Sofa,
@@ -22,6 +23,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import bookings from '@/routes/bookings';
 import facilities from '@/routes/facilities';
 import penyewa from '@/routes/penyewa';
 import roomTypes from '@/routes/room-types';
@@ -34,6 +36,14 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+];
+
+const operationalNavItems: NavItem[] = [
+    {
+        title: 'Booking',
+        href: bookings.index(),
+        icon: CalendarCheck,
     },
 ];
 
@@ -91,6 +101,7 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <NavMain items={operationalNavItems} label="Operasional" />
                 <NavMain items={masterNavItems} label="Master Data" />
             </SidebarContent>
 

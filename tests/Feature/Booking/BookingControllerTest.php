@@ -1,0 +1,106 @@
+<?php
+
+namespace Tests\Feature\Booking;
+
+use App\Enums\BookingStatus;
+use App\Enums\UserRole;
+use App\Models\Booking;
+use App\Models\Branch;
+use App\Models\Penyewa;
+use App\Models\Room;
+use App\Models\RoomType;
+use App\Models\Tenant;
+use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class BookingControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private Tenant $tenant;
+
+    private Branch $branch;
+
+    private Room $room;
+
+    private Penyewa $penyewa;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RolePermissionSeeder::class);
+        $this->tenant = Tenant::factory()->create();
+        $this->branch = Branch::factory()->create(['tenant_id' => $this->tenant->id]);
+        $type = RoomType::factory()->forBranch($this->branch)->create();
+        $this->room = Room::factory()->forBranch($this->branch)->create(['room_type_id' => $type->id]);
+        $this->penyewa = Penyewa::factory()->forBranch($this->branch)->create();
+    }
+
+    private function actingAsRole(UserRole $role): User
+    {
+        $user = User::factory()->create(['tenant_id' => $this->tenant->id]);
+        $user->assignRole($role->value);
+        $user->branches()->sync([$this->branch->id]);
+
+        $this->actingAs($user);
+        $this->withSession(['current_branch_id' => $this->branch->id]);
+
+        return $user;
+    }
+
+    public function test_staff_can_create_a_booking()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        $this->post(route('bookings.store'), [
+            'room_id' => $this->room->id,
+            'penyewa_id' => $this->penyewa->id,
+            'start_date' => '2026-08-01',
+            'end_date' => '2026-09-01',
+            'status' => BookingStatus::Confirmed->value,
+        ])->assertRedirect(route('bookings.index'));
+
+        $this->assertDatabaseHas('bookings', [
+            'branch_id' => $this->branch->id,
+            'room_id' => $this->room->id,
+            'penyewa_id' => $this->penyewa->id,
+            'status' => BookingStatus::Confirmed->value,
+        ]);
+    }
+
+    public function test_conflicting_booking_is_rejected_with_errors()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        Booking::factory()->forRoom($this->room, '2026-08-01', '2026-09-01')->create();
+
+        $this->post(route('bookings.store'), [
+            'room_id' => $this->room->id,
+            'penyewa_id' => $this->penyewa->id,
+            'start_date' => '2026-08-15',
+            'end_date' => '2026-09-15',
+            'status' => BookingStatus::Confirmed->value,
+        ])->assertSessionHasErrors('start_date');
+
+        $this->assertDatabaseCount('bookings', 1);
+    }
+
+    public function test_index_only_shows_current_branch_bookings()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        Booking::factory()->forBranch($this->branch)->create();
+
+        $otherBranch = Branch::factory()->create(['tenant_id' => $this->tenant->id]);
+        Booking::factory()->forBranch($otherBranch)->create();
+
+        $this->get(route('bookings.index'))
+            ->assertInertia(fn ($page) => $page
+                ->component('bookings/index')
+                ->has('bookings.data', 1)
+            );
+    }
+}

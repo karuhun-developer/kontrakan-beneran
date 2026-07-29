@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BranchSwitchController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FrontDesk\BookingController;
 use App\Http\Controllers\Master\FacilityController;
 use App\Http\Controllers\Master\PenyewaController;
 use App\Http\Controllers\Master\RoomController;
@@ -44,6 +45,14 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
             ->middlewareFor(['index', 'edit'], 'permission:penyewa.view')
             ->middlewareFor(['create', 'store', 'update', 'destroy'], 'permission:penyewa.manage');
     });
+
+    /*
+     * Front desk (Fase 2). Booking date-range with availability guard.
+     */
+    Route::resource('bookings', BookingController::class)
+        ->only(['index', 'create', 'store'])
+        ->middlewareFor(['index'], 'permission:booking.view')
+        ->middlewareFor(['create', 'store'], 'permission:booking.manage');
 });
 
 /*

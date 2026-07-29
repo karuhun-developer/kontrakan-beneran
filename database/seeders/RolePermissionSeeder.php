@@ -23,6 +23,7 @@ class RolePermissionSeeder extends Seeder
         'roomtype' => ['roomtype.view', 'roomtype.manage'],
         'facility' => ['facility.view', 'facility.manage'],
         'room' => ['room.view', 'room.manage'],
+        'booking' => ['booking.view', 'booking.manage'],
         'portal' => ['portal.access'],
     ];
 
@@ -40,6 +41,7 @@ class RolePermissionSeeder extends Seeder
             'roomtype.view', 'roomtype.manage',
             'facility.view', 'facility.manage',
             'room.view', 'room.manage',
+            'booking.view', 'booking.manage',
         ],
         UserRole::Admin->value => [
             'branch.view', 'branch.switch',
@@ -47,6 +49,7 @@ class RolePermissionSeeder extends Seeder
             'roomtype.view', 'roomtype.manage',
             'facility.view', 'facility.manage',
             'room.view', 'room.manage',
+            'booking.view', 'booking.manage',
         ],
         UserRole::Staff->value => [
             'branch.view', 'branch.switch',
@@ -54,6 +57,7 @@ class RolePermissionSeeder extends Seeder
             'roomtype.view',
             'facility.view',
             'room.view',
+            'booking.view', 'booking.manage',
         ],
         UserRole::Penyewa->value => [
             'portal.access',

@@ -63,3 +63,15 @@ export type PenyewaListItem = {
     status_label: string;
     id_card_url: string | null;
 };
+
+export type BookingListItem = {
+    id: number;
+    room: string | null;
+    penyewa: string | null;
+    start_date: string;
+    end_date: string;
+    monthly_price: number;
+    status: string;
+    status_label: string;
+    status_color: string;
+};
