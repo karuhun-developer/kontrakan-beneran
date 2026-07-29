@@ -52,6 +52,10 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
             ->except('show')
             ->middlewareFor(['index', 'edit'], 'permission:penyewa.view')
             ->middlewareFor(['create', 'store', 'update', 'destroy'], 'permission:penyewa.manage');
+
+        Route::post('penyewa/{penyewa}/account', [PenyewaController::class, 'account'])
+            ->name('penyewa.account')
+            ->middleware('permission:penyewa.manage');
     });
 
     /*

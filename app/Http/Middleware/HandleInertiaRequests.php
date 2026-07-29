@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Support\BranchContext;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -76,7 +77,25 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
             'notificationFeed' => $this->notificationsFor($user),
+            'portal' => $this->portalStateFor($user),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        ];
+    }
+
+    /**
+     * Portal-only flags. A penyewa still using the system default password
+     * is nudged to change it.
+     *
+     * @return array{must_change_password: bool}|null
+     */
+    private function portalStateFor(?User $user): ?array
+    {
+        if (! $user || $user->isStaff()) {
+            return null;
+        }
+
+        return [
+            'must_change_password' => Hash::check((string) config('portal.default_password'), $user->password),
         ];
     }
 

@@ -1,6 +1,7 @@
 import type { Auth } from '@/types/auth';
 import type { BranchContext, FlashMessages, TenantSummary } from '@/types/branch';
 import type { NotificationFeed } from '@/types/notification';
+import type { PortalState } from '@/types/portal';
 
 declare module 'react' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,6 +19,7 @@ declare module '@inertiajs/core' {
             branchContext: BranchContext;
             flash: FlashMessages;
             notificationFeed: NotificationFeed;
+            portal: PortalState | null;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

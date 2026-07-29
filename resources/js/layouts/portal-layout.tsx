@@ -1,6 +1,6 @@
 import { ModalRoot } from '@inertiaui/modal-react';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, ReceiptText } from 'lucide-react';
+import { KeyRound, LayoutDashboard, ReceiptText } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,6 +16,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { dashboard as portalDashboard } from '@/routes/portal';
 import portalInvoices from '@/routes/portal/invoices';
+import { edit as securityEdit } from '@/routes/security';
 import type { BreadcrumbItem } from '@/types';
 
 const navItems = [
@@ -30,7 +31,7 @@ export default function PortalLayout({
     children: React.ReactNode;
     breadcrumbs?: BreadcrumbItem[];
 }) {
-    const { auth } = usePage().props;
+    const { auth, portal } = usePage().props;
     const currentUrl = usePage().url;
     const getInitials = useInitials();
 
@@ -109,6 +110,26 @@ export default function PortalLayout({
                 <div className="border-b border-sidebar-border/70">
                     <div className="mx-auto flex h-12 w-full items-center px-4 text-neutral-500 md:max-w-5xl">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
+                    </div>
+                </div>
+            )}
+
+            {portal?.must_change_password && (
+                <div className="border-b border-amber-300/60 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950/40">
+                    <div className="mx-auto flex w-full flex-wrap items-center gap-3 px-4 py-3 md:max-w-5xl">
+                        <KeyRound className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <p className="text-sm text-amber-800 dark:text-amber-200">
+                            Kamu masih memakai kata sandi default. Ganti sekarang
+                            demi keamanan akunmu.
+                        </p>
+                        <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="ml-auto border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-100 dark:hover:bg-amber-900/40"
+                        >
+                            <Link href={securityEdit().url}>Ganti Kata Sandi</Link>
+                        </Button>
                     </div>
                 </div>
             )}

@@ -65,6 +65,8 @@ export default function BookingForm({
         name: '',
         phone: '',
         gender: '',
+        email: '',
+        password: '',
         deposit_amount: '',
     });
     const [quickErrors, setQuickErrors] = useState<Record<string, string>>({});
@@ -80,6 +82,8 @@ export default function BookingForm({
                     name: quick.name,
                     phone: quick.phone || null,
                     gender: quick.gender || null,
+                    email: quick.email || null,
+                    password: quick.password || null,
                     deposit_amount: quick.deposit_amount
                         ? Number(quick.deposit_amount)
                         : null,
@@ -90,7 +94,14 @@ export default function BookingForm({
                 ...prev,
             ]);
             setData('penyewa_id', String(created.id));
-            setQuick({ name: '', phone: '', gender: '', deposit_amount: '' });
+            setQuick({
+                name: '',
+                phone: '',
+                gender: '',
+                email: '',
+                password: '',
+                deposit_amount: '',
+            });
             setShowQuickCreate(false);
         } catch (error) {
             if (error instanceof HttpError && error.status === 422) {
@@ -315,6 +326,50 @@ export default function BookingForm({
                                             />
                                         </div>
                                     </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="quick_email">
+                                            Email (opsional)
+                                        </Label>
+                                        <Input
+                                            id="quick_email"
+                                            type="email"
+                                            value={quick.email}
+                                            onChange={(e) =>
+                                                setQuick((prev) => ({
+                                                    ...prev,
+                                                    email: e.target.value,
+                                                }))
+                                            }
+                                            placeholder="Untuk akun portal penyewa"
+                                        />
+                                        <InputError
+                                            message={quickErrors.email}
+                                        />
+                                    </div>
+                                    {quick.email.trim() !== '' && (
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="quick_password">
+                                                Kata Sandi Portal (opsional)
+                                            </Label>
+                                            <Input
+                                                id="quick_password"
+                                                type="password"
+                                                autoComplete="new-password"
+                                                value={quick.password}
+                                                onChange={(e) =>
+                                                    setQuick((prev) => ({
+                                                        ...prev,
+                                                        password:
+                                                            e.target.value,
+                                                    }))
+                                                }
+                                                placeholder="Kosongkan = kata sandi default"
+                                            />
+                                            <InputError
+                                                message={quickErrors.password}
+                                            />
+                                        </div>
+                                    )}
                                     <div className="grid gap-2">
                                         <Label htmlFor="quick_deposit">
                                             Deposit Awal (opsional)

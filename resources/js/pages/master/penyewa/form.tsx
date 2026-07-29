@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { KeyRound } from 'lucide-react';
 import { ChangeEvent, FormEvent } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
@@ -25,6 +26,8 @@ type Penyewa = {
     address: string | null;
     status: string;
     id_card_url: string | null;
+    has_account?: boolean;
+    account_email?: string | null;
 };
 
 type PageProps = {
@@ -44,6 +47,12 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
         status: model?.status ?? 'active',
         id_card: null as File | null,
         deposit_amount: '',
+        password: '',
+    });
+
+    const account = useForm({
+        email: model?.account_email ?? model?.email ?? '',
+        password: '',
     });
 
     const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +121,30 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                                 <InputError message={errors.email} />
                             </div>
                         </div>
+
+                        {!isEdit && data.email.trim() !== '' && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="password">
+                                    Kata Sandi Portal (opsional)
+                                </Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={data.password}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
+                                    placeholder="Minimal 8 karakter"
+                                    autoComplete="new-password"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Karena email diisi, penyewa otomatis dapat
+                                    akun portal. Kosongkan untuk memakai kata
+                                    sandi default.
+                                </p>
+                                <InputError message={errors.password} />
+                            </div>
+                        )}
 
                         <div className="grid gap-2 sm:grid-cols-2">
                             <div className="grid gap-2">
@@ -238,6 +271,82 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                                 Batal
                             </Button>
                         </div>
+
+                        {isEdit && model && (
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex items-center gap-2">
+                                    <KeyRound className="size-4 text-muted-foreground" />
+                                    <p className="text-sm font-medium">
+                                        Akun Portal
+                                    </p>
+                                    {model.has_account && (
+                                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                            Aktif
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {model.has_account
+                                        ? 'Setel ulang email/kata sandi login penyewa.'
+                                        : 'Buat kredensial agar penyewa bisa login ke portal.'}
+                                </p>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="account_email">Email</Label>
+                                    <Input
+                                        id="account_email"
+                                        type="email"
+                                        value={account.data.email}
+                                        onChange={(e) =>
+                                            account.setData(
+                                                'email',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError message={account.errors.email} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="account_password">
+                                        Kata Sandi
+                                    </Label>
+                                    <Input
+                                        id="account_password"
+                                        type="password"
+                                        value={account.data.password}
+                                        onChange={(e) =>
+                                            account.setData(
+                                                'password',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="Minimal 8 karakter"
+                                        autoComplete="new-password"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Kosongkan untuk memakai kata sandi
+                                        default.
+                                    </p>
+                                    <InputError
+                                        message={account.errors.password}
+                                    />
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    disabled={account.processing}
+                                    onClick={() =>
+                                        account.post(
+                                            penyewa.account(model.id).url,
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                >
+                                    {model.has_account
+                                        ? 'Simpan Akun'
+                                        : 'Buat Akun Portal'}
+                                </Button>
+                            </div>
+                        )}
                     </form>
                 );
             }}

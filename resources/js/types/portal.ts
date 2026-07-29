@@ -1,3 +1,7 @@
+export type PortalState = {
+    must_change_password: boolean;
+};
+
 export type PortalInvoiceListItem = {
     id: number;
     number: string;
