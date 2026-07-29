@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Billing\CashflowCategoryController;
+use App\Http\Controllers\Billing\CashflowController;
 use App\Http\Controllers\Billing\InvoiceController;
 use App\Http\Controllers\BranchSwitchController;
 use App\Http\Controllers\DashboardController;
@@ -77,6 +79,17 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
         Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void');
     });
+
+    Route::resource('cashflows', CashflowController::class)
+        ->except('show')
+        ->middlewareFor(['index'], 'permission:cashflow.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:cashflow.manage');
+
+    Route::resource('cashflow-categories', CashflowCategoryController::class)
+        ->parameters(['cashflow-categories' => 'cashflowCategory'])
+        ->except('show')
+        ->middlewareFor(['index'], 'permission:cashflow.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:cashflow.manage');
 });
 
 /*

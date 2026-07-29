@@ -9,6 +9,7 @@ import {
     Sofa,
     Tags,
     Users,
+    Wallet,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { BranchSwitcher } from '@/components/branch-switcher';
@@ -25,6 +26,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import bookings from '@/routes/bookings';
+import cashflows from '@/routes/cashflows';
 import facilities from '@/routes/facilities';
 import invoices from '@/routes/invoices';
 import penyewa from '@/routes/penyewa';
@@ -51,6 +53,11 @@ const operationalNavItems: NavItem[] = [
         title: 'Tagihan',
         href: invoices.index(),
         icon: ReceiptText,
+    },
+    {
+        title: 'Kas',
+        href: cashflows.index(),
+        icon: Wallet,
     },
 ];
 

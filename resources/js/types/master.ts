@@ -218,3 +218,38 @@ export type InvoiceDetail = {
     items: InvoiceItemRow[];
     payments: PaymentRow[];
 };
+
+export type CashflowListItem = {
+    id: number;
+    type: string;
+    type_label: string;
+    type_color: string;
+    amount: number;
+    description: string;
+    category: string | null;
+    occurred_on: string;
+    is_system: boolean;
+};
+
+export type CashflowStats = {
+    balance: number;
+    income_this_month: number;
+    expense_this_month: number;
+};
+
+export type CashflowCategoryOption = {
+    value: number;
+    label: string;
+    type: string;
+};
+
+export type CashflowCategoryListItem = {
+    id: number;
+    name: string;
+    type: string;
+    type_label: string;
+    type_color: string;
+    is_system: boolean;
+    status: string;
+    status_label: string;
+};
