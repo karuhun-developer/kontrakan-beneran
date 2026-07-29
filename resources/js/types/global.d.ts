@@ -1,5 +1,6 @@
 import type { Auth } from '@/types/auth';
 import type { BranchContext, FlashMessages, TenantSummary } from '@/types/branch';
+import type { NotificationFeed } from '@/types/notification';
 
 declare module 'react' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,6 +17,7 @@ declare module '@inertiajs/core' {
             tenant: TenantSummary | null;
             branchContext: BranchContext;
             flash: FlashMessages;
+            notifications: NotificationFeed;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

@@ -13,6 +13,7 @@ use App\Http\Controllers\Master\FacilityController;
 use App\Http\Controllers\Master\PenyewaController;
 use App\Http\Controllers\Master\RoomController;
 use App\Http\Controllers\Master\RoomTypeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Portal\DashboardController as PortalDashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -119,6 +120,13 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
     Route::post('laundry/{laundry}/advance', [LaundryController::class, 'advance'])
         ->name('laundry.advance')
         ->middleware('permission:laundry.manage');
+
+    /*
+     * Notification center (Fase 5). Each user sees only their own notifications.
+     */
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 });
 
 /*
