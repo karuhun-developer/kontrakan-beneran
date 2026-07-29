@@ -6,6 +6,7 @@ use App\Http\Controllers\Billing\GatewayWebhookController;
 use App\Http\Controllers\Billing\InvoiceController;
 use App\Http\Controllers\BranchSwitchController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Deposit\DepositController;
 use App\Http\Controllers\FrontDesk\BookingController;
 use App\Http\Controllers\Master\FacilityController;
 use App\Http\Controllers\Master\PenyewaController;
@@ -92,6 +93,18 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
         ->except('show')
         ->middlewareFor(['index'], 'permission:cashflow.view')
         ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:cashflow.manage');
+
+    /*
+     * Deposit (Fase 4). Held balances per penyewa with a deduction/refund ledger.
+     */
+    Route::resource('deposits', DepositController::class)
+        ->only(['index', 'create', 'store', 'show'])
+        ->middlewareFor(['index', 'show'], 'permission:deposit.view')
+        ->middlewareFor(['create', 'store'], 'permission:deposit.manage');
+
+    Route::post('deposits/{deposit}/transaction', [DepositController::class, 'transaction'])
+        ->name('deposits.transaction')
+        ->middleware('permission:deposit.manage');
 });
 
 /*

@@ -5,6 +5,7 @@ import {
     CalendarCheck,
     FolderGit2,
     LayoutGrid,
+    PiggyBank,
     ReceiptText,
     Sofa,
     Tags,
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/sidebar';
 import bookings from '@/routes/bookings';
 import cashflows from '@/routes/cashflows';
+import deposits from '@/routes/deposits';
 import facilities from '@/routes/facilities';
 import invoices from '@/routes/invoices';
 import penyewa from '@/routes/penyewa';
@@ -58,6 +60,11 @@ const operationalNavItems: NavItem[] = [
         title: 'Kas',
         href: cashflows.index(),
         icon: Wallet,
+    },
+    {
+        title: 'Deposit',
+        href: deposits.index(),
+        icon: PiggyBank,
     },
 ];
 

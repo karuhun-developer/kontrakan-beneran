@@ -77,28 +77,22 @@ class Deposit extends Model
     }
 
     /**
-     * Recompute the running balance and status from the ledger. Does not persist.
+     * Recompute the running balance and status from the ledger, treating the
+     * stored held amount as authoritative and subtracting deductions/refunds.
+     * Does not persist.
      */
     public function refreshBalance(): static
     {
-        $held = 0;
-        $removed = 0;
+        $removed = $this->transactions
+            ->whereIn('type', [DepositTransactionType::Deduction, DepositTransactionType::Refund])
+            ->sum('amount');
 
-        foreach ($this->transactions as $transaction) {
-            if ($transaction->type === DepositTransactionType::Hold) {
-                $held += $transaction->amount;
-            } else {
-                $removed += $transaction->amount;
-            }
-        }
-
-        $this->amount = $held;
-        $this->balance = max(0, $held - $removed);
+        $this->balance = max(0, $this->amount - $removed);
 
         if ($this->balance <= 0) {
             $this->status = DepositStatus::Refunded;
             $this->settled_at ??= now()->toDateString();
-        } elseif ($this->balance < $held) {
+        } elseif ($this->balance < $this->amount) {
             $this->status = DepositStatus::Partial;
             $this->settled_at = null;
         } else {

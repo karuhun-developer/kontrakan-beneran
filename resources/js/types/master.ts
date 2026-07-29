@@ -267,6 +267,53 @@ export type CashflowCalendar = {
     categories: CashflowCategoryTotal[];
 };
 
+export type DepositListItem = {
+    id: number;
+    penyewa: string;
+    amount: number;
+    balance: number;
+    held_at: string;
+    settled_at: string | null;
+    status: string;
+    status_label: string;
+    status_color: string;
+};
+
+export type DepositStats = {
+    held_balance: number;
+    active_count: number;
+    refunded_this_month: number;
+};
+
+export type DepositTransactionRow = {
+    id: number;
+    type: string;
+    type_label: string;
+    type_color: string;
+    sign: number;
+    amount: number;
+    reason: string | null;
+    occurred_on: string;
+    recorded_by: string | null;
+};
+
+export type DepositDetail = {
+    id: number;
+    penyewa: string;
+    penyewa_phone: string | null;
+    room: string | null;
+    amount: number;
+    balance: number;
+    held_at: string;
+    settled_at: string | null;
+    status: string;
+    status_label: string;
+    status_color: string;
+    notes: string | null;
+    can_transact: boolean;
+    transactions: DepositTransactionRow[];
+};
+
 export type CashflowCategoryOption = {
     value: number;
     label: string;
