@@ -15,7 +15,9 @@ use App\Http\Controllers\Master\RoomController;
 use App\Http\Controllers\Master\RoomTypeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Portal\DashboardController as PortalDashboardController;
+use App\Http\Controllers\Portal\DepositController as PortalDepositController;
 use App\Http\Controllers\Portal\InvoiceController as PortalInvoiceController;
+use App\Http\Controllers\Portal\LaundryController as PortalLaundryController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -148,6 +150,12 @@ Route::middleware(['auth', 'verified', 'role:penyewa'])->prefix('portal')->name(
     Route::get('invoices', [PortalInvoiceController::class, 'index'])->name('invoices.index');
     Route::get('invoices/{invoice}', [PortalInvoiceController::class, 'show'])->name('invoices.show');
     Route::post('invoices/{invoice}/checkout', [PortalInvoiceController::class, 'checkout'])->name('invoices.checkout');
+
+    Route::get('deposits', [PortalDepositController::class, 'index'])->name('deposits.index');
+    Route::get('deposits/{deposit}', [PortalDepositController::class, 'show'])->name('deposits.show');
+
+    Route::get('laundry', [PortalLaundryController::class, 'index'])->name('laundry.index');
+    Route::get('laundry/{laundry}', [PortalLaundryController::class, 'show'])->name('laundry.show');
 });
 
 require __DIR__.'/settings.php';

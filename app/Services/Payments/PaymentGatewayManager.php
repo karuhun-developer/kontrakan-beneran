@@ -13,7 +13,7 @@ class PaymentGatewayManager extends Manager
 {
     public function getDefaultDriver(): string
     {
-        return $this->config->get('payment.default', 'null');
+        return $this->config->get('payment.default') ?: 'null';
     }
 
     protected function createMidtransDriver(): PaymentGateway

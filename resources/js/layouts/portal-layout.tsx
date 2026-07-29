@@ -1,6 +1,12 @@
 import { ModalRoot } from '@inertiaui/modal-react';
 import { Link, usePage } from '@inertiajs/react';
-import { KeyRound, LayoutDashboard, ReceiptText } from 'lucide-react';
+import {
+    KeyRound,
+    LayoutDashboard,
+    ReceiptText,
+    Shirt,
+    Wallet,
+} from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,13 +21,17 @@ import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { dashboard as portalDashboard } from '@/routes/portal';
+import portalDeposits from '@/routes/portal/deposits';
 import portalInvoices from '@/routes/portal/invoices';
+import portalLaundry from '@/routes/portal/laundry';
 import { edit as securityEdit } from '@/routes/security';
 import type { BreadcrumbItem } from '@/types';
 
 const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: portalDashboard().url },
     { label: 'Tagihan', icon: ReceiptText, href: portalInvoices.index().url },
+    { label: 'Deposit', icon: Wallet, href: portalDeposits.index().url },
+    { label: 'Laundry', icon: Shirt, href: portalLaundry.index().url },
 ];
 
 export default function PortalLayout({
