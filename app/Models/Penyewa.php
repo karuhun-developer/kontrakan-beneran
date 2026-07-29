@@ -57,6 +57,14 @@ class Penyewa extends Model implements HasMedia
         return $this->hasMany(Booking::class);
     }
 
+    /**
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection(self::MEDIA_ID_CARD)->singleFile();

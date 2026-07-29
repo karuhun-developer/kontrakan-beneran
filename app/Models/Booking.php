@@ -67,6 +67,14 @@ class Booking extends Model
     }
 
     /**
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * Only bookings whose status holds the room (blocks new overlapping bookings).
      *
      * @param  Builder<static>  $query
