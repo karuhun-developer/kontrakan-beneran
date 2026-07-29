@@ -99,9 +99,10 @@ class BookingControllerTest extends TestCase
                 ->component('bookings/index')
                 ->where('calendar.month', '2026-08')
                 ->where('calendar.days_in_month', 31)
-                ->has('calendar.rooms', 1)
-                ->where('calendar.rooms.0.bars.0.start_index', 4)
-                ->where('calendar.rooms.0.bars.0.span', 15)
+                ->has('calendar.groups', 1)
+                ->has('calendar.groups.0.rooms', 1)
+                ->where('calendar.groups.0.rooms.0.bars.0.start_index', 4)
+                ->where('calendar.groups.0.rooms.0.bars.0.span', 15)
             );
     }
 

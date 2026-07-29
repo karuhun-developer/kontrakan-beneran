@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/format';
 import bookings from '@/routes/bookings';
-import type { BookingCalendar } from '@/types/master';
+import type { BookingCalendar, TimelineRoom } from '@/types/master';
 
 const DAY_WIDTH = 40;
 const LABEL_WIDTH = 160;
@@ -43,6 +43,31 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
 
     const gridTemplateColumns = `${LABEL_WIDTH}px repeat(${calendar.days_in_month}, minmax(${DAY_WIDTH}px, 1fr))`;
     const minWidth = LABEL_WIDTH + calendar.days_in_month * DAY_WIDTH;
+
+    // Flatten groups into positioned rows: a header row per room type,
+    // followed by its rooms. Row 1 is the day-header, so bodies start at 2.
+    type Row =
+        | { kind: 'group'; key: string; name: string; gridRow: number }
+        | { kind: 'room'; key: string; room: TimelineRoom; gridRow: number };
+
+    const rows: Row[] = [];
+    let cursor = 2;
+    for (const group of calendar.groups) {
+        rows.push({
+            kind: 'group',
+            key: `g-${group.name}`,
+            name: group.name,
+            gridRow: cursor++,
+        });
+        for (const room of group.rooms) {
+            rows.push({
+                kind: 'room',
+                key: `r-${room.id}`,
+                room,
+                gridRow: cursor++,
+            });
+        }
+    }
 
     return (
         <div className="flex flex-col gap-4">
@@ -83,7 +108,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                 </div>
             </div>
 
-            {calendar.rooms.length === 0 ? (
+            {calendar.groups.length === 0 ? (
                 <div className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
                     Belum ada kamar di cabang ini.
                 </div>
@@ -118,13 +143,30 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                             ))}
 
                             {/* Rows */}
-                            {calendar.rooms.map((room, roomIndex) => {
-                                const gridRow = roomIndex + 2;
+                            {rows.map((row) => {
+                                const gridRow = row.gridRow;
+
+                                if (row.kind === 'group') {
+                                    return (
+                                        <div
+                                            key={row.key}
+                                            className="sticky left-0 z-30 flex items-center border-t bg-muted/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                                            style={{
+                                                gridColumn: `1 / span ${calendar.days_in_month + 1}`,
+                                                gridRow,
+                                            }}
+                                        >
+                                            {row.name}
+                                        </div>
+                                    );
+                                }
+
+                                const room = row.room;
 
                                 return (
-                                    <Fragment key={room.id}>
+                                    <Fragment key={row.key}>
                                         <div
-                                            className="sticky left-0 z-20 flex flex-col justify-center border-t border-r bg-card px-3 py-2"
+                                            className="sticky left-0 z-20 flex flex-col justify-center border-t border-r bg-card px-3 py-2 pl-5"
                                             style={{ gridColumn: 1, gridRow }}
                                         >
                                             <span className="font-medium leading-tight">

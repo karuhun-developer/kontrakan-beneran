@@ -134,6 +134,11 @@ export type TimelineRoom = {
     bars: TimelineBar[];
 };
 
+export type TimelineGroup = {
+    name: string;
+    rooms: TimelineRoom[];
+};
+
 export type BookingCalendar = {
     month: string;
     month_label: string;
@@ -141,5 +146,5 @@ export type BookingCalendar = {
     prev_month: string;
     next_month: string;
     days: CalendarDay[];
-    rooms: TimelineRoom[];
+    groups: TimelineGroup[];
 };

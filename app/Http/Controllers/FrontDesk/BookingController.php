@@ -83,41 +83,50 @@ class BookingController extends Controller
             ->get()
             ->groupBy('room_id');
 
-        $rooms = Room::forBranch($branch->id)
+        $mapRoom = function (Room $room) use ($bookingsByRoom, $monthStart, $windowEndExclusive, $daysInMonth): array {
+            $bars = ($bookingsByRoom->get($room->id) ?? collect())
+                ->map(function (Booking $booking) use ($monthStart, $windowEndExclusive, $daysInMonth): array {
+                    $start = $booking->start_date->max($monthStart);
+                    $endExclusive = $booking->end_date->min($windowEndExclusive);
+                    $startIndex = $start->day - 1;
+                    $span = max(1, min((int) $start->diffInDays($endExclusive), $daysInMonth - $startIndex));
+
+                    return [
+                        'id' => $booking->id,
+                        'penyewa' => $booking->penyewa?->name ?? '—',
+                        'start_index' => $startIndex,
+                        'span' => $span,
+                        'status' => $booking->status->value,
+                        'status_label' => $booking->status->label(),
+                        'status_color' => $booking->status->color(),
+                        'start_date' => $booking->start_date->toDateString(),
+                        'end_date' => $booking->end_date->toDateString(),
+                        'continues_before' => $booking->start_date->lt($monthStart),
+                        'continues_after' => $booking->end_date->gt($windowEndExclusive),
+                    ];
+                })
+                ->sortBy('start_index')
+                ->values();
+
+            return [
+                'id' => $room->id,
+                'number' => $room->number,
+                'name' => $room->name,
+                'bars' => $bars,
+            ];
+        };
+
+        $groups = Room::forBranch($branch->id)
+            ->with('roomType:id,name')
             ->orderBy('number')
-            ->get(['id', 'number', 'name'])
-            ->map(function (Room $room) use ($bookingsByRoom, $monthStart, $windowEndExclusive, $daysInMonth): array {
-                $bars = ($bookingsByRoom->get($room->id) ?? collect())
-                    ->map(function (Booking $booking) use ($monthStart, $windowEndExclusive, $daysInMonth): array {
-                        $start = $booking->start_date->max($monthStart);
-                        $endExclusive = $booking->end_date->min($windowEndExclusive);
-                        $startIndex = $start->day - 1;
-                        $span = max(1, min((int) $start->diffInDays($endExclusive), $daysInMonth - $startIndex));
-
-                        return [
-                            'id' => $booking->id,
-                            'penyewa' => $booking->penyewa?->name ?? '—',
-                            'start_index' => $startIndex,
-                            'span' => $span,
-                            'status' => $booking->status->value,
-                            'status_label' => $booking->status->label(),
-                            'status_color' => $booking->status->color(),
-                            'start_date' => $booking->start_date->toDateString(),
-                            'end_date' => $booking->end_date->toDateString(),
-                            'continues_before' => $booking->start_date->lt($monthStart),
-                            'continues_after' => $booking->end_date->gt($windowEndExclusive),
-                        ];
-                    })
-                    ->sortBy('start_index')
-                    ->values();
-
-                return [
-                    'id' => $room->id,
-                    'number' => $room->number,
-                    'name' => $room->name,
-                    'bars' => $bars,
-                ];
-            });
+            ->get()
+            ->groupBy(fn (Room $room): string => $room->roomType?->name ?? 'Tanpa Tipe')
+            ->map(fn ($rooms, string $typeName): array => [
+                'name' => $typeName,
+                'rooms' => $rooms->map($mapRoom)->values(),
+            ])
+            ->sortKeys()
+            ->values();
 
         return [
             'month' => $monthStart->format('Y-m'),
@@ -126,7 +135,7 @@ class BookingController extends Controller
             'prev_month' => $monthStart->subMonth()->format('Y-m'),
             'next_month' => $windowEndExclusive->format('Y-m'),
             'days' => $days,
-            'rooms' => $rooms,
+            'groups' => $groups,
         ];
     }
 
