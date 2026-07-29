@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Contracts\PaymentGateway;
 use App\Models\User;
+use App\Services\Payments\PaymentGatewayManager;
 use App\Support\BranchContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -19,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(BranchContext::class);
+
+        $this->app->singleton(PaymentGatewayManager::class);
+        $this->app->bind(
+            PaymentGateway::class,
+            fn ($app): PaymentGateway => $app->make(PaymentGatewayManager::class)->driver(),
+        );
     }
 
     /**

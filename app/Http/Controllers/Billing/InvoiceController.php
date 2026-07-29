@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Actions\Billing\GenerateInvoiceForBooking;
+use App\Actions\Billing\InitiateGatewayPayment;
 use App\Actions\Billing\RecordPayment;
 use App\Actions\Billing\VoidInvoice;
 use App\Enums\InvoiceStatus;
@@ -22,6 +23,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use InertiaUI\Modal\Modal;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InvoiceController extends Controller
 {
@@ -173,6 +175,19 @@ class InvoiceController extends Controller
         }
 
         return back()->with('success', 'Pembayaran berhasil dicatat.');
+    }
+
+    public function checkout(Request $request, Invoice $invoice, InitiateGatewayPayment $action): SymfonyResponse
+    {
+        $invoice = $this->findInvoice($invoice->getKey());
+
+        $charge = $action->handle($invoice, $request->user());
+
+        if ($charge->redirectUrl !== null) {
+            return Inertia::location($charge->redirectUrl);
+        }
+
+        return back()->with('success', 'Pembayaran online telah dibuat, menunggu konfirmasi.');
     }
 
     public function void(Invoice $invoice, VoidInvoice $action): RedirectResponse

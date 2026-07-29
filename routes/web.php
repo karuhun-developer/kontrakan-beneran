@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Billing\CashflowCategoryController;
 use App\Http\Controllers\Billing\CashflowController;
+use App\Http\Controllers\Billing\GatewayWebhookController;
 use App\Http\Controllers\Billing\InvoiceController;
 use App\Http\Controllers\BranchSwitchController;
 use App\Http\Controllers\DashboardController;
@@ -77,6 +78,7 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
     Route::middleware('permission:invoice.manage')->group(function () {
         Route::post('invoices/from-booking/{booking}', [InvoiceController::class, 'storeFromBooking'])->name('invoices.from-booking');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
+        Route::post('invoices/{invoice}/checkout', [InvoiceController::class, 'checkout'])->name('invoices.checkout');
         Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void');
     });
 
@@ -91,6 +93,11 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
         ->middlewareFor(['index'], 'permission:cashflow.view')
         ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:cashflow.manage');
 });
+
+/*
+ * Payment gateway webhook (unauthenticated; verified by driver signature).
+ */
+Route::post('webhooks/payment', [GatewayWebhookController::class, 'handle'])->name('webhooks.payment');
 
 /*
  * Penyewa portal.

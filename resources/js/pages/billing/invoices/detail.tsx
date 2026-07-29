@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Ban, Image as ImageIcon, Wallet } from 'lucide-react';
+import { Ban, CreditCard, Image as ImageIcon, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
@@ -193,6 +193,23 @@ export default function InvoiceDetailModal({
                             >
                                 <Wallet className="size-4" />
                                 Catat Pembayaran
+                            </Button>
+                        )}
+                        {invoice.can_pay && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={processing}
+                                onClick={() =>
+                                    submit(
+                                        invoices.checkout(invoice.id).url,
+                                        {},
+                                        close,
+                                    )
+                                }
+                            >
+                                <CreditCard className="size-4" />
+                                Bayar Online
                             </Button>
                         )}
                         {invoice.can_void && (
