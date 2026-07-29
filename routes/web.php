@@ -20,6 +20,7 @@ use App\Http\Controllers\Portal\InvoiceController as PortalInvoiceController;
 use App\Http\Controllers\Portal\LaundryController as PortalLaundryController;
 use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\Portal\StayController as PortalStayController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -136,6 +137,14 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
     Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    /*
+     * Reports (Fase 7). Management-level financial summary + CSV export.
+     */
+    Route::middleware('permission:report.view')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/export', [ReportController::class, 'exportCashflow'])->name('reports.export');
+    });
 });
 
 /*

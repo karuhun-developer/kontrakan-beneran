@@ -3,6 +3,7 @@ import {
     BedDouble,
     BookOpen,
     CalendarCheck,
+    ChartColumn,
     FolderGit2,
     LayoutGrid,
     PiggyBank,
@@ -27,6 +28,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useCan } from '@/hooks/use-can';
 import bookings from '@/routes/bookings';
 import cashflows from '@/routes/cashflows';
 import deposits from '@/routes/deposits';
@@ -34,6 +36,7 @@ import facilities from '@/routes/facilities';
 import invoices from '@/routes/invoices';
 import laundry from '@/routes/laundry';
 import penyewa from '@/routes/penyewa';
+import reports from '@/routes/reports';
 import roomTypes from '@/routes/room-types';
 import rooms from '@/routes/rooms';
 import { dashboard } from '@/routes';
@@ -112,6 +115,18 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const canViewReports = useCan('report.view');
+
+    const analyticsNavItems: NavItem[] = canViewReports
+        ? [
+              {
+                  title: 'Laporan',
+                  href: reports.index(),
+                  icon: ChartColumn,
+              },
+          ]
+        : [];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -130,6 +145,9 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain items={mainNavItems} />
                 <NavMain items={operationalNavItems} label="Operasional" />
+                {analyticsNavItems.length > 0 && (
+                    <NavMain items={analyticsNavItems} label="Analitik" />
+                )}
                 <NavMain items={masterNavItems} label="Master Data" />
             </SidebarContent>
 

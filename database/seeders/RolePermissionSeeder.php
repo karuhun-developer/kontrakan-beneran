@@ -28,6 +28,7 @@ class RolePermissionSeeder extends Seeder
         'cashflow' => ['cashflow.view', 'cashflow.manage'],
         'deposit' => ['deposit.view', 'deposit.manage'],
         'laundry' => ['laundry.view', 'laundry.manage'],
+        'report' => ['report.view'],
         'portal' => ['portal.access'],
     ];
 
@@ -50,6 +51,7 @@ class RolePermissionSeeder extends Seeder
             'cashflow.view', 'cashflow.manage',
             'deposit.view', 'deposit.manage',
             'laundry.view', 'laundry.manage',
+            'report.view',
         ],
         UserRole::Admin->value => [
             'branch.view', 'branch.switch',
@@ -62,6 +64,7 @@ class RolePermissionSeeder extends Seeder
             'cashflow.view', 'cashflow.manage',
             'deposit.view', 'deposit.manage',
             'laundry.view', 'laundry.manage',
+            'report.view',
         ],
         UserRole::Staff->value => [
             'branch.view', 'branch.switch',
