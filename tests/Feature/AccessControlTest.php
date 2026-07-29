@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AccessControlTest extends TestCase
@@ -117,6 +118,21 @@ class AccessControlTest extends TestCase
             ->assertSessionHasErrors('branch_id');
 
         $this->assertNotEquals($other->id, session('current_branch_id'));
+    }
+
+    public function test_switching_branches_requires_the_branch_switch_permission()
+    {
+        $tenant = Tenant::factory()->create();
+        $branch = Branch::factory()->create(['tenant_id' => $tenant->id]);
+
+        Role::findByName(UserRole::Staff->value, 'web')->revokePermissionTo('branch.switch');
+
+        $user = $this->staffUser($tenant);
+        $user->branches()->sync([$branch->id]);
+
+        $this->actingAs($user)
+            ->put(route('branch.switch'), ['branch_id' => $branch->id])
+            ->assertForbidden();
     }
 
     public function test_owner_can_switch_to_any_branch_within_their_tenant()

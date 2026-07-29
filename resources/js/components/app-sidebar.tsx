@@ -50,54 +50,74 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const operationalNavItems: NavItem[] = [
+type GatedNavItem = NavItem & { permission: string };
+
+const operationalNavItems: GatedNavItem[] = [
     {
         title: 'Booking',
         href: bookings.index(),
         icon: CalendarCheck,
+        permission: 'booking.view',
     },
     {
         title: 'Tagihan',
         href: invoices.index(),
         icon: ReceiptText,
+        permission: 'invoice.view',
     },
     {
         title: 'Kas',
         href: cashflows.index(),
         icon: Wallet,
+        permission: 'cashflow.view',
     },
     {
         title: 'Deposit',
         href: deposits.index(),
         icon: PiggyBank,
+        permission: 'deposit.view',
     },
     {
         title: 'Laundry',
         href: laundry.index(),
         icon: Shirt,
+        permission: 'laundry.view',
     },
 ];
 
-const masterNavItems: NavItem[] = [
+const analyticsNavItems: GatedNavItem[] = [
+    {
+        title: 'Laporan',
+        href: reports.index(),
+        icon: ChartColumn,
+        permission: 'report.view',
+    },
+];
+
+const masterNavItems: GatedNavItem[] = [
     {
         title: 'Kamar',
         href: rooms.index(),
         icon: BedDouble,
+        permission: 'room.view',
     },
     {
         title: 'Tipe Kamar',
         href: roomTypes.index(),
         icon: Tags,
+        permission: 'roomtype.view',
     },
     {
         title: 'Fasilitas',
         href: facilities.index(),
         icon: Sofa,
+        permission: 'facility.view',
     },
     {
         title: 'Penyewa',
         href: penyewa.index(),
         icon: Users,
+        permission: 'penyewa.view',
     },
 ];
 
@@ -115,17 +135,13 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const canViewReports = useCan('report.view');
+    const can = useCan();
 
-    const analyticsNavItems: NavItem[] = canViewReports
-        ? [
-              {
-                  title: 'Laporan',
-                  href: reports.index(),
-                  icon: ChartColumn,
-              },
-          ]
-        : [];
+    const operational = operationalNavItems.filter((item) =>
+        can(item.permission),
+    );
+    const analytics = analyticsNavItems.filter((item) => can(item.permission));
+    const master = masterNavItems.filter((item) => can(item.permission));
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -144,11 +160,15 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                <NavMain items={operationalNavItems} label="Operasional" />
-                {analyticsNavItems.length > 0 && (
-                    <NavMain items={analyticsNavItems} label="Analitik" />
+                {operational.length > 0 && (
+                    <NavMain items={operational} label="Operasional" />
                 )}
-                <NavMain items={masterNavItems} label="Master Data" />
+                {analytics.length > 0 && (
+                    <NavMain items={analytics} label="Analitik" />
+                )}
+                {master.length > 0 && (
+                    <NavMain items={master} label="Master Data" />
+                )}
             </SidebarContent>
 
             <SidebarFooter>

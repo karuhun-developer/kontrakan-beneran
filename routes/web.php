@@ -30,7 +30,9 @@ Route::inertia('/', 'welcome')->name('home');
  */
 Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
-    Route::put('branch/switch', [BranchSwitchController::class, 'update'])->name('branch.switch');
+    Route::put('branch/switch', [BranchSwitchController::class, 'update'])
+        ->middleware('permission:branch.switch')
+        ->name('branch.switch');
 
     /*
      * Master data (Fase 1). Read for all staff; write gated per permission.
