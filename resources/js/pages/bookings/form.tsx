@@ -14,6 +14,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import { formatRupiah } from '@/lib/format';
 import { HttpError, postJson } from '@/lib/http';
 import bookings from '@/routes/bookings';
@@ -25,6 +26,16 @@ type PageProps = {
     penyewaOptions: SelectOption[];
     statusOptions: SelectOption[];
 };
+
+type Mode = 'reserve' | 'walkin';
+
+/** Local (not UTC) today as YYYY-MM-DD for date input defaults. */
+function todayIso(): string {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+    return now.toISOString().slice(0, 10);
+}
 
 export default function BookingForm({
     roomOptions,
@@ -40,6 +51,7 @@ export default function BookingForm({
         notes: '',
     });
 
+    const [mode, setMode] = useState<Mode>('reserve');
     const [options, setOptions] = useState<SelectOption[]>(penyewaOptions);
     const [showQuickCreate, setShowQuickCreate] = useState(false);
     const [quick, setQuick] = useState({ name: '', phone: '', gender: '' });
@@ -76,6 +88,20 @@ export default function BookingForm({
         }
     };
 
+    const switchMode = (next: Mode) => {
+        setMode(next);
+        if (next === 'walkin') {
+            // Walk-in = check-in on the spot: start today, force checked-in.
+            setData((prev) => ({
+                ...prev,
+                status: 'checked_in',
+                start_date: prev.start_date || todayIso(),
+            }));
+        } else {
+            setData('status', 'confirmed');
+        }
+    };
+
     const selectedRoom = roomOptions.find(
         (option) => String(option.value) === data.room_id,
     );
@@ -93,6 +119,35 @@ export default function BookingForm({
 
                 return (
                     <form onSubmit={submit} className="space-y-6">
+                        <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+                            {(
+                                [
+                                    ['reserve', 'Reservasi'],
+                                    ['walkin', 'Walk-in'],
+                                ] as [Mode, string][]
+                            ).map(([value, label]) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => switchMode(value)}
+                                    className={cn(
+                                        'rounded-md px-3 py-1.5 text-sm font-medium transition',
+                                        mode === value
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground',
+                                    )}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                        {mode === 'walkin' && (
+                            <p className="-mt-3 text-xs text-muted-foreground">
+                                Penyewa langsung check-in hari ini. Kamar akan
+                                ditandai terisi.
+                            </p>
+                        )}
+
                         <div className="grid gap-2">
                             <Label htmlFor="room_id">Kamar</Label>
                             <Select
@@ -256,7 +311,11 @@ export default function BookingForm({
 
                         <div className="grid gap-2 sm:grid-cols-2">
                             <div className="grid gap-2">
-                                <Label htmlFor="start_date">Tanggal Mulai</Label>
+                                <Label htmlFor="start_date">
+                                    {mode === 'walkin'
+                                        ? 'Tanggal Masuk'
+                                        : 'Tanggal Mulai'}
+                                </Label>
                                 <Input
                                     id="start_date"
                                     type="date"
@@ -281,30 +340,32 @@ export default function BookingForm({
                             </div>
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="status">Status</Label>
-                            <Select
-                                value={data.status}
-                                onValueChange={(value) =>
-                                    setData('status', value)
-                                }
-                            >
-                                <SelectTrigger id="status">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {statusOptions.map((option) => (
-                                        <SelectItem
-                                            key={option.value}
-                                            value={String(option.value)}
-                                        >
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors.status} />
-                        </div>
+                        {mode === 'reserve' && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="status">Status</Label>
+                                <Select
+                                    value={data.status}
+                                    onValueChange={(value) =>
+                                        setData('status', value)
+                                    }
+                                >
+                                    <SelectTrigger id="status">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {statusOptions.map((option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={String(option.value)}
+                                            >
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.status} />
+                            </div>
+                        )}
 
                         <div className="grid gap-2">
                             <Label htmlFor="notes">Catatan</Label>
@@ -320,7 +381,9 @@ export default function BookingForm({
 
                         <div className="flex items-center gap-3 pt-2">
                             <Button type="submit" disabled={processing}>
-                                Simpan
+                                {mode === 'walkin'
+                                    ? 'Check-in Sekarang'
+                                    : 'Simpan'}
                             </Button>
                             <Button
                                 type="button"

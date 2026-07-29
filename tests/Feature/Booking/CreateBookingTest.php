@@ -81,6 +81,12 @@ class CreateBookingTest extends TestCase
 
         $this->assertEquals(RoomStatus::Occupied, $this->room->refresh()->room_status);
         $this->assertNotNull($booking->checked_in_at);
+
+        // Walk-in should record a check-in entry on the timeline too.
+        $this->assertDatabaseHas('booking_logs', [
+            'booking_id' => $booking->id,
+            'event' => BookingEvent::CheckedIn->value,
+        ]);
     }
 
     public function test_it_rejects_a_conflicting_range()

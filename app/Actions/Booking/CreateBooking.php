@@ -72,6 +72,16 @@ class CreateBooking
                 ],
             ]);
 
+            // Walk-in: booking created already checked-in, so record the
+            // check-in on the timeline too (not just the "created" entry).
+            if ($status === BookingStatus::CheckedIn) {
+                $booking->logs()->create([
+                    'user_id' => $actor?->id,
+                    'event' => BookingEvent::CheckedIn,
+                    'description' => 'Check-in langsung (walk-in).',
+                ]);
+            }
+
             return $booking;
         });
     }
