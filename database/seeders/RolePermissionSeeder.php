@@ -27,6 +27,7 @@ class RolePermissionSeeder extends Seeder
         'invoice' => ['invoice.view', 'invoice.manage'],
         'cashflow' => ['cashflow.view', 'cashflow.manage'],
         'deposit' => ['deposit.view', 'deposit.manage'],
+        'laundry' => ['laundry.view', 'laundry.manage'],
         'portal' => ['portal.access'],
     ];
 
@@ -48,6 +49,7 @@ class RolePermissionSeeder extends Seeder
             'invoice.view', 'invoice.manage',
             'cashflow.view', 'cashflow.manage',
             'deposit.view', 'deposit.manage',
+            'laundry.view', 'laundry.manage',
         ],
         UserRole::Admin->value => [
             'branch.view', 'branch.switch',
@@ -59,6 +61,7 @@ class RolePermissionSeeder extends Seeder
             'invoice.view', 'invoice.manage',
             'cashflow.view', 'cashflow.manage',
             'deposit.view', 'deposit.manage',
+            'laundry.view', 'laundry.manage',
         ],
         UserRole::Staff->value => [
             'branch.view', 'branch.switch',
@@ -70,6 +73,7 @@ class RolePermissionSeeder extends Seeder
             'invoice.view', 'invoice.manage',
             'cashflow.view', 'cashflow.manage',
             'deposit.view', 'deposit.manage',
+            'laundry.view', 'laundry.manage',
         ],
         UserRole::Penyewa->value => [
             'portal.access',

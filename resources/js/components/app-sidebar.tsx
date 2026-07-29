@@ -7,6 +7,7 @@ import {
     LayoutGrid,
     PiggyBank,
     ReceiptText,
+    Shirt,
     Sofa,
     Tags,
     Users,
@@ -31,6 +32,7 @@ import cashflows from '@/routes/cashflows';
 import deposits from '@/routes/deposits';
 import facilities from '@/routes/facilities';
 import invoices from '@/routes/invoices';
+import laundry from '@/routes/laundry';
 import penyewa from '@/routes/penyewa';
 import roomTypes from '@/routes/room-types';
 import rooms from '@/routes/rooms';
@@ -65,6 +67,11 @@ const operationalNavItems: NavItem[] = [
         title: 'Deposit',
         href: deposits.index(),
         icon: PiggyBank,
+    },
+    {
+        title: 'Laundry',
+        href: laundry.index(),
+        icon: Shirt,
     },
 ];
 

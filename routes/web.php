@@ -8,6 +8,7 @@ use App\Http\Controllers\BranchSwitchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Deposit\DepositController;
 use App\Http\Controllers\FrontDesk\BookingController;
+use App\Http\Controllers\Laundry\LaundryController;
 use App\Http\Controllers\Master\FacilityController;
 use App\Http\Controllers\Master\PenyewaController;
 use App\Http\Controllers\Master\RoomController;
@@ -105,6 +106,19 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
     Route::post('deposits/{deposit}/transaction', [DepositController::class, 'transaction'])
         ->name('deposits.transaction')
         ->middleware('permission:deposit.manage');
+
+    /*
+     * Laundry (Fase 4). Orders charged to a deposit or raised as an invoice.
+     */
+    Route::resource('laundry', LaundryController::class)
+        ->only(['index', 'create', 'store', 'show'])
+        ->parameters(['laundry' => 'laundry'])
+        ->middlewareFor(['index', 'show'], 'permission:laundry.view')
+        ->middlewareFor(['create', 'store'], 'permission:laundry.manage');
+
+    Route::post('laundry/{laundry}/advance', [LaundryController::class, 'advance'])
+        ->name('laundry.advance')
+        ->middleware('permission:laundry.manage');
 });
 
 /*

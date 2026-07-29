@@ -314,6 +314,47 @@ export type DepositDetail = {
     transactions: DepositTransactionRow[];
 };
 
+export type LaundryListItem = {
+    id: number;
+    number: string;
+    penyewa: string;
+    weight: number | null;
+    price: number;
+    ordered_on: string;
+    status: string;
+    status_label: string;
+    status_color: string;
+    payment_source_label: string;
+    payment_source_color: string;
+};
+
+export type LaundryStats = {
+    open_orders: number;
+    ready_orders: number;
+    billed_this_month: number;
+};
+
+export type LaundryDetail = {
+    id: number;
+    number: string;
+    penyewa: string;
+    penyewa_phone: string | null;
+    weight: number | null;
+    price: number;
+    ordered_on: string;
+    notes: string | null;
+    recorded_by: string | null;
+    status: string;
+    status_label: string;
+    status_color: string;
+    payment_source: string;
+    payment_source_label: string;
+    payment_source_color: string;
+    invoice_number: string | null;
+    next_status_label: string | null;
+    can_advance: boolean;
+};
+
 export type CashflowCategoryOption = {
     value: number;
     label: string;
