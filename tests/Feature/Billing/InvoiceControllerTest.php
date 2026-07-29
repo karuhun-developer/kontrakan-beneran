@@ -18,6 +18,8 @@ use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class InvoiceControllerTest extends TestCase
@@ -123,6 +125,24 @@ class InvoiceControllerTest extends TestCase
             'amount' => 1_000_000,
             'branch_id' => $this->branch->id,
         ]);
+    }
+
+    public function test_staff_can_attach_a_payment_proof()
+    {
+        Storage::fake('public');
+        $this->actingAsRole(UserRole::Staff);
+
+        $invoice = $this->invoice(1_000_000);
+
+        $this->post(route('invoices.pay', $invoice), [
+            'amount' => 1_000_000,
+            'method' => PaymentMethod::Transfer->value,
+            'proof' => UploadedFile::fake()->image('bukti.jpg'),
+        ])->assertRedirect();
+
+        $payment = Payment::where('invoice_id', $invoice->id)->firstOrFail();
+
+        $this->assertTrue($payment->hasMedia(Payment::MEDIA_PROOF));
     }
 
     public function test_overpayment_is_rejected_with_errors()

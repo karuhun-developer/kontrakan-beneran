@@ -191,6 +191,7 @@ export type PaymentRow = {
     reference: string | null;
     recorded_by: string | null;
     paid_at: string | null;
+    proof_url: string | null;
 };
 
 export type InvoiceDetail = {

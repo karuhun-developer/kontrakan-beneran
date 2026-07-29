@@ -10,11 +10,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Payment extends Model
+class Payment extends Model implements HasMedia
 {
     /** @use HasFactory<PaymentFactory> */
-    use BelongsToBranch, HasFactory;
+    use BelongsToBranch, HasFactory, InteractsWithMedia;
+
+    public const MEDIA_PROOF = 'proof';
 
     protected $fillable = [
         'tenant_id',
@@ -73,5 +79,17 @@ class Payment extends Model
     public function scopeSettled(Builder $query): Builder
     {
         return $query->where($this->qualifyColumn('status'), PaymentStatus::Completed);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::MEDIA_PROOF)->singleFile();
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->fit(Fit::Contain, 600, 600)
+            ->nonQueued();
     }
 }

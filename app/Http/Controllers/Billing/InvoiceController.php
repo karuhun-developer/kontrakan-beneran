@@ -86,6 +86,7 @@ class InvoiceController extends Controller
             'items',
             'payments' => fn ($q) => $q->latest('paid_at')->latest('id'),
             'payments.recordedBy:id,name',
+            'payments.media',
         ]);
 
         $paid = $invoice->paidAmount();
@@ -136,6 +137,7 @@ class InvoiceController extends Controller
                     'reference' => $payment->reference,
                     'recorded_by' => $payment->recordedBy?->name,
                     'paid_at' => $payment->paid_at?->toDateTimeString(),
+                    'proof_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF) ?: null,
                 ]),
             ],
             'paymentMethods' => array_map(
@@ -154,9 +156,10 @@ class InvoiceController extends Controller
             'method' => ['required', Rule::enum(PaymentMethod::class)],
             'reference' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:500'],
-        ], [], ['amount' => 'jumlah', 'method' => 'metode']);
+            'proof' => ['nullable', 'image', 'max:4096'],
+        ], [], ['amount' => 'jumlah', 'method' => 'metode', 'proof' => 'bukti pembayaran']);
 
-        $action->handle(
+        $payment = $action->handle(
             invoice: $invoice,
             amount: (int) $validated['amount'],
             method: PaymentMethod::from($validated['method']),
@@ -164,6 +167,10 @@ class InvoiceController extends Controller
             reference: $validated['reference'] ?? null,
             notes: $validated['notes'] ?? null,
         );
+
+        if ($request->hasFile('proof')) {
+            $payment->addMediaFromRequest('proof')->toMediaCollection(Payment::MEDIA_PROOF);
+        }
 
         return back()->with('success', 'Pembayaran berhasil dicatat.');
     }

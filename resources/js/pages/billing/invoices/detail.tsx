@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Ban, Wallet } from 'lucide-react';
+import { Ban, Image as ImageIcon, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
@@ -63,12 +63,13 @@ export default function InvoiceDetailModal({
     );
     const [reference, setReference] = useState('');
     const [notes, setNotes] = useState('');
+    const [proof, setProof] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const submit = (
         url: string,
-        data: Record<string, string>,
+        data: Record<string, string | File | null>,
         close: () => void,
     ) => {
         setProcessing(true);
@@ -269,13 +270,33 @@ export default function InvoiceDetailModal({
                                     onChange={(e) => setNotes(e.target.value)}
                                 />
                             </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="proof">
+                                    Bukti Pembayaran (opsional)
+                                </Label>
+                                <Input
+                                    id="proof"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        setProof(e.target.files?.[0] ?? null)
+                                    }
+                                />
+                                <InputError message={errors.proof} />
+                            </div>
                             <Button
                                 type="button"
                                 disabled={processing || !amount}
                                 onClick={() =>
                                     submit(
                                         invoices.pay(invoice.id).url,
-                                        { amount, method, reference, notes },
+                                        {
+                                            amount,
+                                            method,
+                                            reference,
+                                            notes,
+                                            proof,
+                                        },
                                         close,
                                     )
                                 }
@@ -317,6 +338,17 @@ export default function InvoiceDetailModal({
                                                     ? ` · ${payment.recorded_by}`
                                                     : ''}
                                             </p>
+                                            {payment.proof_url && (
+                                                <a
+                                                    href={payment.proof_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                                                >
+                                                    <ImageIcon className="size-3" />
+                                                    Lihat bukti
+                                                </a>
+                                            )}
                                         </div>
                                         <ColorBadge
                                             label={payment.status_label}
