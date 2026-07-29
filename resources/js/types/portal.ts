@@ -125,6 +125,8 @@ export type PortalInvoicePayment = {
     status_label: string;
     status_color: string;
     paid_at: string | null;
+    proof_url: string | null;
+    proof_thumb_url: string | null;
 };
 
 export type TransferInstructions = {

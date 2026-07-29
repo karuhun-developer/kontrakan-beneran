@@ -123,6 +123,8 @@ class InvoiceController extends Controller
                     'status_label' => $payment->status->label(),
                     'status_color' => $payment->status->color(),
                     'paid_at' => $payment->paid_at?->toDateTimeString(),
+                    'proof_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF) ?: null,
+                    'proof_thumb_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF, 'thumb') ?: null,
                 ]),
             ],
         ])->baseRoute('portal.invoices.index');

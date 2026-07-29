@@ -3,6 +3,7 @@ import { Clock, CreditCard, Landmark, Upload } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
+import { PaymentProof } from '@/components/master/payment-proof';
 import { ColorBadge } from '@/components/master/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -353,6 +354,14 @@ export default function PortalInvoiceDetailModal({
                                             <p className="text-xs text-muted-foreground">
                                                 {formatDateTime(payment.paid_at)}
                                             </p>
+                                            {payment.proof_url && (
+                                                <PaymentProof
+                                                    url={payment.proof_url}
+                                                    thumbUrl={
+                                                        payment.proof_thumb_url
+                                                    }
+                                                />
+                                            )}
                                         </div>
                                         <ColorBadge
                                             label={payment.status_label}

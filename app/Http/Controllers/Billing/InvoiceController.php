@@ -142,6 +142,7 @@ class InvoiceController extends Controller
                     'recorded_by' => $payment->recordedBy?->name,
                     'paid_at' => $payment->paid_at?->toDateTimeString(),
                     'proof_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF) ?: null,
+                    'proof_thumb_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF, 'thumb') ?: null,
                     'can_review' => $payment->status === PaymentStatus::Pending,
                 ]),
             ],

@@ -1,15 +1,9 @@
 import { router } from '@inertiajs/react';
-import {
-    Ban,
-    Check,
-    CreditCard,
-    Image as ImageIcon,
-    Wallet,
-    X,
-} from 'lucide-react';
+import { Ban, Check, CreditCard, Wallet, X } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
+import { PaymentProof } from '@/components/master/payment-proof';
 import { ColorBadge } from '@/components/master/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -364,15 +358,12 @@ export default function InvoiceDetailModal({
                                                     : ''}
                                             </p>
                                             {payment.proof_url && (
-                                                <a
-                                                    href={payment.proof_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                                                >
-                                                    <ImageIcon className="size-3" />
-                                                    Lihat bukti
-                                                </a>
+                                                <PaymentProof
+                                                    url={payment.proof_url}
+                                                    thumbUrl={
+                                                        payment.proof_thumb_url
+                                                    }
+                                                />
                                             )}
                                             {payment.can_review && (
                                                 <div className="mt-2 flex gap-2">

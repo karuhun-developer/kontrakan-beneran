@@ -193,6 +193,7 @@ export type PaymentRow = {
     recorded_by: string | null;
     paid_at: string | null;
     proof_url: string | null;
+    proof_thumb_url: string | null;
     can_review: boolean;
 };
 

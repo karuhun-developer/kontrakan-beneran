@@ -99,6 +99,24 @@ class PortalManualPaymentTest extends TestCase
         $this->assertSame(InvoiceStatus::Unpaid, $invoice->fresh()->status);
     }
 
+    public function test_submitted_proof_is_exposed_for_preview_in_the_detail_payload()
+    {
+        Storage::fake('public');
+
+        $invoice = $this->invoice(1_000_000);
+
+        $this->post(route('portal.invoices.manual-payment', $invoice), [
+            'amount' => 500_000,
+            'proof' => UploadedFile::fake()->image('bukti.jpg'),
+        ])->assertRedirect();
+
+        $this->get(route('portal.invoices.show', $invoice))
+            ->assertInertia(fn ($page) => $page
+                ->where('_inertiaui_modal.props.invoice.payments.0.proof_url', fn ($url) => is_string($url) && $url !== '')
+                ->where('_inertiaui_modal.props.invoice.payments.0.proof_thumb_url', fn ($url) => is_string($url) && $url !== '')
+            );
+    }
+
     public function test_proof_is_required()
     {
         $invoice = $this->invoice();
