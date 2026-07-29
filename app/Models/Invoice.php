@@ -74,6 +74,59 @@ class Invoice extends Model
     }
 
     /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Total amount settled against this invoice.
+     */
+    public function paidAmount(): int
+    {
+        return (int) $this->payments()->settled()->sum('amount');
+    }
+
+    /**
+     * Remaining balance after settled payments (never below zero).
+     */
+    public function outstandingAmount(): int
+    {
+        return max(0, $this->total - $this->paidAmount());
+    }
+
+    /**
+     * Move the invoice status to match its settled payments: paid when fully
+     * covered, partial when some money is in, otherwise unpaid (keeping an
+     * existing overdue flag). Void invoices are left untouched.
+     */
+    public function refreshPaymentStatus(): static
+    {
+        if ($this->status === InvoiceStatus::Void) {
+            return $this;
+        }
+
+        $paid = $this->paidAmount();
+
+        if ($paid >= $this->total && $this->total > 0) {
+            $this->status = InvoiceStatus::Paid;
+            $this->paid_at = $this->paid_at ?? now();
+        } elseif ($paid > 0) {
+            $this->status = InvoiceStatus::Partial;
+            $this->paid_at = null;
+        } else {
+            if ($this->status !== InvoiceStatus::Overdue) {
+                $this->status = InvoiceStatus::Unpaid;
+            }
+            $this->paid_at = null;
+        }
+
+        return $this;
+    }
+
+    /**
      * Recompute subtotal and total from the line items and current adjustments.
      * total = subtotal - discount + fine (never below zero).
      */
