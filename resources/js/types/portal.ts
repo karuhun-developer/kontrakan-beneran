@@ -127,6 +127,12 @@ export type PortalInvoicePayment = {
     paid_at: string | null;
 };
 
+export type TransferInstructions = {
+    bank_name: string;
+    account_number: string;
+    account_holder: string;
+};
+
 export type PortalInvoiceDetail = {
     id: number;
     number: string;
@@ -145,6 +151,9 @@ export type PortalInvoiceDetail = {
     status_color: string;
     notes: string | null;
     can_pay: boolean;
+    has_pending_payment: boolean;
+    can_submit_manual: boolean;
+    transfer: TransferInstructions | null;
     items: PortalInvoiceItem[];
     payments: PortalInvoicePayment[];
 };

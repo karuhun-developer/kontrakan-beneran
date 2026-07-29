@@ -1,5 +1,12 @@
 import { router } from '@inertiajs/react';
-import { Ban, CreditCard, Image as ImageIcon, Wallet } from 'lucide-react';
+import {
+    Ban,
+    Check,
+    CreditCard,
+    Image as ImageIcon,
+    Wallet,
+    X,
+} from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
@@ -17,6 +24,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { formatDate, formatDateTime, formatRupiah } from '@/lib/format';
 import invoices from '@/routes/invoices';
+import invoicePayments from '@/routes/invoices/payments';
 import type { InvoiceDetail, SelectOption } from '@/types/master';
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -366,17 +374,50 @@ export default function InvoiceDetailModal({
                                                     Lihat bukti
                                                 </a>
                                             )}
+                                            {payment.can_review && (
+                                                <div className="mt-2 flex gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        disabled={processing}
+                                                        onClick={() =>
+                                                            submit(
+                                                                invoicePayments.confirm(
+                                                                    payment.id,
+                                                                ).url,
+                                                                {},
+                                                                close,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Check className="size-3.5" />
+                                                        Konfirmasi
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="text-red-600 hover:text-red-600"
+                                                        disabled={processing}
+                                                        onClick={() =>
+                                                            submit(
+                                                                invoicePayments.reject(
+                                                                    payment.id,
+                                                                ).url,
+                                                                {},
+                                                                close,
+                                                            )
+                                                        }
+                                                    >
+                                                        <X className="size-3.5" />
+                                                        Tolak
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
                                         <ColorBadge
                                             label={payment.status_label}
-                                            color={
-                                                payment.status === 'completed'
-                                                    ? 'green'
-                                                    : payment.status ===
-                                                        'failed'
-                                                      ? 'red'
-                                                      : 'yellow'
-                                            }
+                                            color={payment.status_color}
                                         />
                                     </li>
                                 ))}

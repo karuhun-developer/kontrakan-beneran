@@ -50,6 +50,9 @@ class DemoSeeder extends Seeder
                 'name' => 'Cabang Pusat',
                 'address' => 'Jl. Merdeka No. 1, Jakarta',
                 'phone' => '021-1111111',
+                'bank_name' => 'BCA',
+                'bank_account_number' => '1234567890',
+                'bank_account_holder' => 'Kost Demo Pusat',
                 'status' => CommonStatus::Active,
             ],
         );

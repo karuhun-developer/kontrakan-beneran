@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Actions\Billing\InitiateGatewayPayment;
+use App\Actions\Billing\SubmitManualPayment;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Concerns\ResolvesPenyewa;
@@ -11,6 +12,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -71,12 +73,16 @@ class InvoiceController extends Controller
     {
         $invoice = $this->findInvoice($invoice->getKey());
         $invoice->load([
+            'branch:id,name,bank_name,bank_account_number,bank_account_holder',
             'booking.room:id,number,name',
             'items',
             'payments' => fn ($q) => $q->latest('paid_at')->latest('id'),
         ]);
 
         $paid = $invoice->paidAmount();
+        $outstanding = max(0, $invoice->total - $paid);
+        $hasPending = $invoice->payments
+            ->contains(fn (Payment $payment): bool => $payment->status === PaymentStatus::Pending);
 
         return Inertia::modal('portal/invoices/detail', [
             'invoice' => [
@@ -93,12 +99,15 @@ class InvoiceController extends Controller
                 'fine' => $invoice->fine,
                 'total' => $invoice->total,
                 'paid' => $paid,
-                'outstanding' => max(0, $invoice->total - $paid),
+                'outstanding' => $outstanding,
                 'status' => $invoice->status->value,
                 'status_label' => $invoice->status->label(),
                 'status_color' => $invoice->status->color(),
                 'notes' => $invoice->notes,
                 'can_pay' => $invoice->status->isOutstanding(),
+                'has_pending_payment' => $hasPending,
+                'can_submit_manual' => $invoice->status->isOutstanding() && ! $hasPending,
+                'transfer' => $invoice->branch?->transferInstructions(),
                 'items' => $invoice->items->map(fn (InvoiceItem $item): array => [
                     'id' => $item->id,
                     'type_label' => $item->type->label(),
@@ -130,6 +139,30 @@ class InvoiceController extends Controller
         }
 
         return back()->with('success', 'Pembayaran online telah dibuat, menunggu konfirmasi.');
+    }
+
+    public function submitManualPayment(Request $request, Invoice $invoice, SubmitManualPayment $action): RedirectResponse
+    {
+        $invoice = $this->findInvoice($invoice->getKey());
+
+        $validated = $request->validate([
+            'amount' => ['required', 'integer', 'min:1'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'proof' => ['required', 'image', 'max:4096'],
+        ], [], [
+            'amount' => 'jumlah',
+            'proof' => 'bukti transfer',
+        ]);
+
+        $payment = $action->handle(
+            invoice: $invoice,
+            amount: (int) $validated['amount'],
+            notes: $validated['notes'] ?? null,
+        );
+
+        $payment->addMediaFromRequest('proof')->toMediaCollection(Payment::MEDIA_PROOF);
+
+        return back()->with('success', 'Bukti transfer terkirim, menunggu konfirmasi admin.');
     }
 
     /**

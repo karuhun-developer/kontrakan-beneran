@@ -21,6 +21,7 @@ use App\Http\Controllers\Portal\LaundryController as PortalLaundryController;
 use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\Portal\StayController as PortalStayController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Settings\PaymentSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -95,6 +96,8 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
         Route::post('invoices/{invoice}/checkout', [InvoiceController::class, 'checkout'])->name('invoices.checkout');
         Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void');
+        Route::post('invoices/payments/{payment}/confirm', [InvoiceController::class, 'confirmPayment'])->name('invoices.payments.confirm');
+        Route::post('invoices/payments/{payment}/reject', [InvoiceController::class, 'rejectPayment'])->name('invoices.payments.reject');
     });
 
     Route::resource('cashflows', CashflowController::class)
@@ -147,6 +150,14 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [ReportController::class, 'exportCashflow'])->name('reports.export');
     });
+
+    /*
+     * Payment settings (Fase 7). Per-branch manual-transfer bank details.
+     */
+    Route::middleware('permission:branch.manage')->group(function () {
+        Route::get('settings/payment', [PaymentSettingController::class, 'edit'])->name('payment-settings.edit');
+        Route::patch('settings/payment', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
+    });
 });
 
 /*
@@ -166,6 +177,7 @@ Route::middleware(['auth', 'verified', 'role:penyewa'])->prefix('portal')->name(
     Route::get('invoices', [PortalInvoiceController::class, 'index'])->name('invoices.index');
     Route::get('invoices/{invoice}', [PortalInvoiceController::class, 'show'])->name('invoices.show');
     Route::post('invoices/{invoice}/checkout', [PortalInvoiceController::class, 'checkout'])->name('invoices.checkout');
+    Route::post('invoices/{invoice}/manual-payment', [PortalInvoiceController::class, 'submitManualPayment'])->name('invoices.manual-payment');
 
     Route::get('deposits', [PortalDepositController::class, 'index'])->name('deposits.index');
     Route::get('deposits/{deposit}', [PortalDepositController::class, 'show'])->name('deposits.show');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Billing;
 
+use App\Actions\Billing\ConfirmManualPayment;
 use App\Actions\Billing\GenerateInvoiceForBooking;
 use App\Actions\Billing\InitiateGatewayPayment;
 use App\Actions\Billing\RecordPayment;
@@ -136,10 +137,12 @@ class InvoiceController extends Controller
                     'method_label' => $payment->method->label(),
                     'status' => $payment->status->value,
                     'status_label' => $payment->status->label(),
+                    'status_color' => $payment->status->color(),
                     'reference' => $payment->reference,
                     'recorded_by' => $payment->recordedBy?->name,
                     'paid_at' => $payment->paid_at?->toDateTimeString(),
                     'proof_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF) ?: null,
+                    'can_review' => $payment->status === PaymentStatus::Pending,
                 ]),
             ],
             'paymentMethods' => array_map(
@@ -175,6 +178,28 @@ class InvoiceController extends Controller
         }
 
         return back()->with('success', 'Pembayaran berhasil dicatat.');
+    }
+
+    public function confirmPayment(Payment $payment, ConfirmManualPayment $action): RedirectResponse
+    {
+        $payment = $this->findPayment($payment->getKey());
+
+        $action->handle($payment, request()->user());
+
+        return back()->with('success', 'Pembayaran dikonfirmasi.');
+    }
+
+    public function rejectPayment(Payment $payment): RedirectResponse
+    {
+        $payment = $this->findPayment($payment->getKey());
+
+        if ($payment->status !== PaymentStatus::Pending) {
+            return back()->with('error', 'Pembayaran ini sudah ditinjau.');
+        }
+
+        $payment->update(['status' => PaymentStatus::Failed]);
+
+        return back()->with('success', 'Konfirmasi pembayaran ditolak.');
     }
 
     public function checkout(Request $request, Invoice $invoice, InitiateGatewayPayment $action): SymfonyResponse
@@ -213,6 +238,14 @@ class InvoiceController extends Controller
     private function findInvoice(int $invoiceId): Invoice
     {
         return Invoice::forBranch($this->currentBranch()->id)->findOrFail($invoiceId);
+    }
+
+    /**
+     * Resolve a payment within the active branch or abort with 404.
+     */
+    private function findPayment(int $paymentId): Payment
+    {
+        return Payment::forBranch($this->currentBranch()->id)->findOrFail($paymentId);
     }
 
     /**

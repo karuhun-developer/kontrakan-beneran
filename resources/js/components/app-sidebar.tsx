@@ -5,6 +5,7 @@ import {
     CalendarCheck,
     ChartColumn,
     FolderGit2,
+    Landmark,
     LayoutGrid,
     PiggyBank,
     ReceiptText,
@@ -35,6 +36,7 @@ import deposits from '@/routes/deposits';
 import facilities from '@/routes/facilities';
 import invoices from '@/routes/invoices';
 import laundry from '@/routes/laundry';
+import { edit as paymentSettingsEdit } from '@/routes/payment-settings';
 import penyewa from '@/routes/penyewa';
 import reports from '@/routes/reports';
 import roomTypes from '@/routes/room-types';
@@ -121,6 +123,15 @@ const masterNavItems: GatedNavItem[] = [
     },
 ];
 
+const settingsNavItems: GatedNavItem[] = [
+    {
+        title: 'Rekening',
+        href: paymentSettingsEdit(),
+        icon: Landmark,
+        permission: 'branch.manage',
+    },
+];
+
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
@@ -142,6 +153,7 @@ export function AppSidebar() {
     );
     const analytics = analyticsNavItems.filter((item) => can(item.permission));
     const master = masterNavItems.filter((item) => can(item.permission));
+    const settings = settingsNavItems.filter((item) => can(item.permission));
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -168,6 +180,9 @@ export function AppSidebar() {
                 )}
                 {master.length > 0 && (
                     <NavMain items={master} label="Master Data" />
+                )}
+                {settings.length > 0 && (
+                    <NavMain items={settings} label="Pengaturan" />
                 )}
             </SidebarContent>
 

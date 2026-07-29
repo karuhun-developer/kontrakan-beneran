@@ -21,6 +21,9 @@ class Branch extends Model
         'slug',
         'address',
         'phone',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_holder',
         'status',
     ];
 
@@ -28,6 +31,32 @@ class Branch extends Model
     {
         return [
             'status' => CommonStatus::class,
+        ];
+    }
+
+    /**
+     * Whether this branch has manual-transfer instructions to show penyewa.
+     */
+    public function hasTransferInstructions(): bool
+    {
+        return filled($this->bank_account_number) && filled($this->bank_name);
+    }
+
+    /**
+     * The bank-transfer instructions penyewa follow to pay offline.
+     *
+     * @return array{bank_name: string, account_number: string, account_holder: string}|null
+     */
+    public function transferInstructions(): ?array
+    {
+        if (! $this->hasTransferInstructions()) {
+            return null;
+        }
+
+        return [
+            'bank_name' => $this->bank_name,
+            'account_number' => $this->bank_account_number,
+            'account_holder' => $this->bank_account_holder ?? $this->name,
         ];
     }
 

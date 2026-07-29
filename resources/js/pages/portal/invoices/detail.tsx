@@ -1,9 +1,13 @@
 import { router } from '@inertiajs/react';
-import { CreditCard } from 'lucide-react';
+import { Clock, CreditCard, Landmark, Upload } from 'lucide-react';
 import { useState } from 'react';
+import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
 import { ColorBadge } from '@/components/master/status-badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { formatDate, formatDateTime, formatRupiah } from '@/lib/format';
 import portalInvoices from '@/routes/portal/invoices';
 import type { PortalInvoiceDetail } from '@/types/portal';
@@ -44,6 +48,11 @@ export default function PortalInvoiceDetailModal({
     invoice: PortalInvoiceDetail;
 }) {
     const [processing, setProcessing] = useState(false);
+    const [showManual, setShowManual] = useState(false);
+    const [amount, setAmount] = useState(String(invoice.outstanding));
+    const [notes, setNotes] = useState('');
+    const [proof, setProof] = useState<File | null>(null);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const payOnline = (close: () => void) => {
         setProcessing(true);
@@ -53,6 +62,22 @@ export default function PortalInvoiceDetailModal({
             {
                 preserveScroll: true,
                 onSuccess: () => close(),
+                onFinish: () => setProcessing(false),
+            },
+        );
+    };
+
+    const submitManual = (close: () => void) => {
+        setProcessing(true);
+        setErrors({});
+        router.post(
+            portalInvoices.manualPayment(invoice.id).url,
+            { amount, notes, proof },
+            {
+                preserveScroll: true,
+                forceFormData: true,
+                onSuccess: () => close(),
+                onError: (formErrors) => setErrors(formErrors),
                 onFinish: () => setProcessing(false),
             },
         );
@@ -160,6 +185,147 @@ export default function PortalInvoiceDetailModal({
                             <CreditCard className="size-4" />
                             Bayar Online
                         </Button>
+                    )}
+
+                    {invoice.has_pending_payment && (
+                        <div className="flex items-start gap-3 rounded-lg border border-yellow-500/40 bg-yellow-500/5 p-4 text-sm">
+                            <Clock className="mt-0.5 size-4 shrink-0 text-yellow-600" />
+                            <p className="text-muted-foreground">
+                                Bukti transfer kamu sedang ditinjau admin. Kamu
+                                akan diberi tahu setelah pembayaran
+                                dikonfirmasi.
+                            </p>
+                        </div>
+                    )}
+
+                    {invoice.can_submit_manual && (
+                        <div className="space-y-3 rounded-lg border p-4">
+                            <p className="flex items-center gap-2 text-sm font-medium">
+                                <Landmark className="size-4" />
+                                Transfer Manual
+                            </p>
+
+                            {invoice.transfer ? (
+                                <>
+                                    <p className="text-sm text-muted-foreground">
+                                        Silakan transfer sejumlah{' '}
+                                        <span className="font-semibold text-foreground">
+                                            {formatRupiah(invoice.outstanding)}
+                                        </span>{' '}
+                                        ke rekening berikut, lalu unggah bukti
+                                        pembayaran.
+                                    </p>
+                                    <div className="divide-y rounded-lg bg-muted/50 px-4">
+                                        <InfoRow
+                                            label="Bank"
+                                            value={invoice.transfer.bank_name}
+                                        />
+                                        <InfoRow
+                                            label="No. Rekening"
+                                            value={
+                                                invoice.transfer.account_number
+                                            }
+                                        />
+                                        <InfoRow
+                                            label="Atas Nama"
+                                            value={
+                                                invoice.transfer.account_holder
+                                            }
+                                        />
+                                    </div>
+
+                                    {showManual ? (
+                                        <div className="space-y-4 pt-1">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="amount">
+                                                    Jumlah Transfer
+                                                </Label>
+                                                <Input
+                                                    id="amount"
+                                                    type="number"
+                                                    min={1}
+                                                    max={invoice.outstanding}
+                                                    value={amount}
+                                                    onChange={(e) =>
+                                                        setAmount(e.target.value)
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.amount}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="proof">
+                                                    Bukti Transfer
+                                                </Label>
+                                                <Input
+                                                    id="proof"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) =>
+                                                        setProof(
+                                                            e.target.files?.[0] ??
+                                                                null,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.proof}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="notes">
+                                                    Catatan (opsional)
+                                                </Label>
+                                                <Textarea
+                                                    id="notes"
+                                                    rows={2}
+                                                    value={notes}
+                                                    onChange={(e) =>
+                                                        setNotes(e.target.value)
+                                                    }
+                                                />
+                                            </div>
+                                            {errors.invoice && (
+                                                <InputError
+                                                    message={errors.invoice}
+                                                />
+                                            )}
+                                            <Button
+                                                type="button"
+                                                className="w-full"
+                                                disabled={
+                                                    processing ||
+                                                    !amount ||
+                                                    !proof
+                                                }
+                                                onClick={() =>
+                                                    submitManual(close)
+                                                }
+                                            >
+                                                <Upload className="size-4" />
+                                                Kirim Bukti Transfer
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full"
+                                            onClick={() => setShowManual(true)}
+                                        >
+                                            <Upload className="size-4" />
+                                            Sudah Transfer? Unggah Bukti
+                                        </Button>
+                                    )}
+                                </>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    Informasi rekening belum diatur. Silakan
+                                    hubungi admin kost untuk transfer manual.
+                                </p>
+                            )}
+                        </div>
                     )}
 
                     <div>

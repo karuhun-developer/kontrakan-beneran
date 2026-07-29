@@ -188,10 +188,12 @@ export type PaymentRow = {
     method_label: string;
     status: string;
     status_label: string;
+    status_color: string;
     reference: string | null;
     recorded_by: string | null;
     paid_at: string | null;
     proof_url: string | null;
+    can_review: boolean;
 };
 
 export type InvoiceDetail = {
