@@ -11,6 +11,9 @@ dan proyek ini menganut [Semantic Versioning](https://semver.org/lang/id/).
 
 Roadmap fitur (lihat [`PRD.md`](./PRD.md) §8). Item dipindahkan ke versi rilis saat selesai.
 
+### Sedang dikerjakan
+- **Fase 2 — Domain booking (inti):** enum `BookingStatus` (pending/confirmed/checked_in/checked_out/cancelled + label/warna/`blocksAvailability`), model & migrasi `Booking` (date-range, snapshot harga, relasi room/penyewa, scope `active`/`forRoom`/`overlapping`), engine anti double-booking `RoomAvailability` (overlap half-open `[start, end)` per kamar, dukung `ignoreBookingId` untuk perpanjang), factory + 8 test. Front desk/UI & perpanjang menyusul.
+
 ### Direncanakan
 - **Fase 2 — Booking & Front Desk:** availability engine (anti double-booking), booking date-range, grid front desk, check-in/out, perpanjang sewa + log.
 - **Fase 3 — Billing & Kas:** Invoice/Tagihan (recurring bulanan + auto denda telat), Payment (Midtrans + manual), Cashflow + kategori (auto-income).
