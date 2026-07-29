@@ -27,6 +27,7 @@ class PenyewaRequest extends FormRequest
             'address' => ['nullable', 'string'],
             'status' => ['required', new Enum(CommonStatus::class)],
             'id_card' => ['nullable', 'image', 'max:4096'],
+            'deposit_amount' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -39,6 +40,7 @@ class PenyewaRequest extends FormRequest
             'name' => 'nama penyewa',
             'id_card_number' => 'nomor KTP',
             'id_card' => 'foto KTP',
+            'deposit_amount' => 'nominal deposit',
         ];
     }
 }

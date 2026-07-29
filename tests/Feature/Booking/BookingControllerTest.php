@@ -164,6 +164,25 @@ class BookingControllerTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('name');
     }
 
+    public function test_quick_create_penyewa_can_open_a_deposit()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        $response = $this->postJson(route('penyewa.quick-store'), [
+            'name' => 'Deposit Guest',
+            'deposit_amount' => 750_000,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('deposits', [
+            'penyewa_id' => $response->json('id'),
+            'branch_id' => $this->branch->id,
+            'amount' => 750_000,
+            'balance' => 750_000,
+        ]);
+    }
+
     public function test_walkin_with_pay_now_creates_booking_invoice_payment_and_cashflow()
     {
         $this->actingAsRole(UserRole::Staff);

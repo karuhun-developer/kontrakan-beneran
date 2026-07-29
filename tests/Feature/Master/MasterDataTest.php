@@ -145,6 +145,38 @@ class MasterDataTest extends TestCase
         $this->assertNotNull($penyewa->getFirstMedia(Penyewa::MEDIA_ID_CARD));
     }
 
+    public function test_admin_can_open_a_deposit_when_creating_a_penyewa()
+    {
+        $this->actingAsRole(UserRole::Admin);
+
+        $this->post(route('penyewa.store'), [
+            'name' => 'Sinta',
+            'status' => CommonStatus::Active->value,
+            'deposit_amount' => 1_000_000,
+        ])->assertRedirect(route('penyewa.index'));
+
+        $penyewa = Penyewa::where('name', 'Sinta')->firstOrFail();
+
+        $this->assertDatabaseHas('deposits', [
+            'penyewa_id' => $penyewa->id,
+            'branch_id' => $this->branch->id,
+            'amount' => 1_000_000,
+            'balance' => 1_000_000,
+        ]);
+    }
+
+    public function test_creating_a_penyewa_without_a_deposit_amount_opens_no_deposit()
+    {
+        $this->actingAsRole(UserRole::Admin);
+
+        $this->post(route('penyewa.store'), [
+            'name' => 'Tanpa Deposit',
+            'status' => CommonStatus::Active->value,
+        ])->assertRedirect(route('penyewa.index'));
+
+        $this->assertDatabaseCount('deposits', 0);
+    }
+
     public function test_index_only_shows_current_branch_rooms()
     {
         $this->actingAsRole(UserRole::Admin);

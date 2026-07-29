@@ -43,6 +43,7 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
         address: model?.address ?? '',
         status: model?.status ?? 'active',
         id_card: null as File | null,
+        deposit_amount: '',
     });
 
     const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -201,6 +202,29 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                             </Select>
                             <InputError message={errors.status} />
                         </div>
+
+                        {!isEdit && (
+                            <div className="grid gap-2 rounded-lg border border-dashed p-4">
+                                <Label htmlFor="deposit_amount">
+                                    Deposit Awal (opsional)
+                                </Label>
+                                <Input
+                                    id="deposit_amount"
+                                    type="number"
+                                    min={1}
+                                    value={data.deposit_amount}
+                                    onChange={(e) =>
+                                        setData('deposit_amount', e.target.value)
+                                    }
+                                    placeholder="mis. 1000000"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Isi untuk langsung menahan deposit saat
+                                    penyewa dibuat. Kosongkan bila belum ada.
+                                </p>
+                                <InputError message={errors.deposit_amount} />
+                            </div>
+                        )}
 
                         <div className="flex items-center gap-3 pt-2">
                             <Button type="submit" disabled={processing}>

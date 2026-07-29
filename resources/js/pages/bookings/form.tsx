@@ -61,7 +61,12 @@ export default function BookingForm({
     const [mode, setMode] = useState<Mode>('reserve');
     const [options, setOptions] = useState<SelectOption[]>(penyewaOptions);
     const [showQuickCreate, setShowQuickCreate] = useState(false);
-    const [quick, setQuick] = useState({ name: '', phone: '', gender: '' });
+    const [quick, setQuick] = useState({
+        name: '',
+        phone: '',
+        gender: '',
+        deposit_amount: '',
+    });
     const [quickErrors, setQuickErrors] = useState<Record<string, string>>({});
     const [savingPenyewa, setSavingPenyewa] = useState(false);
 
@@ -75,6 +80,9 @@ export default function BookingForm({
                     name: quick.name,
                     phone: quick.phone || null,
                     gender: quick.gender || null,
+                    deposit_amount: quick.deposit_amount
+                        ? Number(quick.deposit_amount)
+                        : null,
                 },
             );
             setOptions((prev) => [
@@ -82,7 +90,7 @@ export default function BookingForm({
                 ...prev,
             ]);
             setData('penyewa_id', String(created.id));
-            setQuick({ name: '', phone: '', gender: '' });
+            setQuick({ name: '', phone: '', gender: '', deposit_amount: '' });
             setShowQuickCreate(false);
         } catch (error) {
             if (error instanceof HttpError && error.status === 422) {
@@ -306,6 +314,28 @@ export default function BookingForm({
                                                 message={quickErrors.gender}
                                             />
                                         </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="quick_deposit">
+                                            Deposit Awal (opsional)
+                                        </Label>
+                                        <Input
+                                            id="quick_deposit"
+                                            type="number"
+                                            min={1}
+                                            value={quick.deposit_amount}
+                                            onChange={(e) =>
+                                                setQuick((prev) => ({
+                                                    ...prev,
+                                                    deposit_amount:
+                                                        e.target.value,
+                                                }))
+                                            }
+                                            placeholder="mis. 1000000"
+                                        />
+                                        <InputError
+                                            message={quickErrors.deposit_amount}
+                                        />
                                     </div>
                                     <Button
                                         type="button"

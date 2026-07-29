@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Master;
 
+use App\Actions\Deposit\OpenDeposit;
 use App\Enums\CommonStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentBranch;
 use App\Http\Controllers\Controller;
@@ -47,18 +48,24 @@ class PenyewaController extends Controller
             ->baseRoute('penyewa.index');
     }
 
-    public function store(PenyewaRequest $request): RedirectResponse
+    public function store(PenyewaRequest $request, OpenDeposit $openDeposit): RedirectResponse
     {
         $branch = $this->currentBranch();
 
         $penyewa = Penyewa::create([
-            ...$request->safe()->except('id_card'),
+            ...$request->safe()->except('id_card', 'deposit_amount'),
             'tenant_id' => $branch->tenant_id,
             'branch_id' => $branch->id,
         ]);
 
         if ($request->hasFile('id_card')) {
             $penyewa->addMediaFromRequest('id_card')->toMediaCollection(Penyewa::MEDIA_ID_CARD);
+        }
+
+        $depositAmount = (int) $request->validated('deposit_amount', 0);
+
+        if ($depositAmount > 0) {
+            $openDeposit->handle(penyewa: $penyewa, amount: $depositAmount, actor: $request->user());
         }
 
         return to_route('penyewa.index')->with('success', 'Penyewa berhasil ditambahkan.');
@@ -68,7 +75,7 @@ class PenyewaController extends Controller
      * Quick-create a penyewa from the booking form (front desk shortcut).
      * Gated by booking.manage so staff without penyewa.manage can still use it.
      */
-    public function quickStore(Request $request): JsonResponse
+    public function quickStore(Request $request, OpenDeposit $openDeposit): JsonResponse
     {
         $branch = $this->currentBranch();
 
@@ -76,14 +83,23 @@ class PenyewaController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'gender' => ['nullable', 'in:male,female'],
+            'deposit_amount' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $penyewa = Penyewa::create([
-            ...$validated,
+            'name' => $validated['name'],
+            'phone' => $validated['phone'] ?? null,
+            'gender' => $validated['gender'] ?? null,
             'tenant_id' => $branch->tenant_id,
             'branch_id' => $branch->id,
             'status' => CommonStatus::Active,
         ]);
+
+        $depositAmount = (int) ($validated['deposit_amount'] ?? 0);
+
+        if ($depositAmount > 0) {
+            $openDeposit->handle(penyewa: $penyewa, amount: $depositAmount, actor: $request->user());
+        }
 
         return response()->json([
             'id' => $penyewa->id,
