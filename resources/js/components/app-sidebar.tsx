@@ -5,6 +5,7 @@ import {
     CalendarCheck,
     FolderGit2,
     LayoutGrid,
+    ReceiptText,
     Sofa,
     Tags,
     Users,
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/sidebar';
 import bookings from '@/routes/bookings';
 import facilities from '@/routes/facilities';
+import invoices from '@/routes/invoices';
 import penyewa from '@/routes/penyewa';
 import roomTypes from '@/routes/room-types';
 import rooms from '@/routes/rooms';
@@ -44,6 +46,11 @@ const operationalNavItems: NavItem[] = [
         title: 'Booking',
         href: bookings.index(),
         icon: CalendarCheck,
+    },
+    {
+        title: 'Tagihan',
+        href: invoices.index(),
+        icon: ReceiptText,
     },
 ];
 

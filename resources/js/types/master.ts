@@ -148,3 +148,73 @@ export type BookingCalendar = {
     days: CalendarDay[];
     groups: TimelineGroup[];
 };
+
+export type InvoiceListItem = {
+    id: number;
+    number: string;
+    penyewa: string;
+    period_start: string;
+    period_end: string;
+    due_date: string;
+    total: number;
+    paid: number;
+    outstanding: number;
+    status: string;
+    status_label: string;
+    status_color: string;
+};
+
+export type InvoiceStats = {
+    outstanding_count: number;
+    outstanding_value: number;
+    overdue_count: number;
+    received_this_month: number;
+};
+
+export type InvoiceItemRow = {
+    id: number;
+    type: string;
+    type_label: string;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    amount: number;
+};
+
+export type PaymentRow = {
+    id: number;
+    amount: number;
+    method: string;
+    method_label: string;
+    status: string;
+    status_label: string;
+    reference: string | null;
+    recorded_by: string | null;
+    paid_at: string | null;
+};
+
+export type InvoiceDetail = {
+    id: number;
+    number: string;
+    penyewa: string;
+    penyewa_phone: string | null;
+    room: string | null;
+    period_start: string;
+    period_end: string;
+    due_date: string;
+    subtotal: number;
+    discount: number;
+    fine: number;
+    total: number;
+    paid: number;
+    outstanding: number;
+    status: string;
+    status_label: string;
+    status_color: string;
+    notes: string | null;
+    paid_at: string | null;
+    can_pay: boolean;
+    can_void: boolean;
+    items: InvoiceItemRow[];
+    payments: PaymentRow[];
+};

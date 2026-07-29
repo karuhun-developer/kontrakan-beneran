@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Billing\InvoiceController;
 use App\Http\Controllers\BranchSwitchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontDesk\BookingController;
@@ -61,6 +62,20 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
         Route::post('bookings/{booking}/extend', [BookingController::class, 'extend'])->name('bookings.extend');
 
         Route::post('penyewa/quick', [PenyewaController::class, 'quickStore'])->name('penyewa.quick-store');
+    });
+
+    /*
+     * Billing (Fase 3). Invoices, payments, cash book.
+     */
+    Route::middleware('permission:invoice.view')->group(function () {
+        Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+        Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+    });
+
+    Route::middleware('permission:invoice.manage')->group(function () {
+        Route::post('invoices/from-booking/{booking}', [InvoiceController::class, 'storeFromBooking'])->name('invoices.from-booking');
+        Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
+        Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void');
     });
 });
 

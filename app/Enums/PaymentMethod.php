@@ -31,4 +31,17 @@ enum PaymentMethod: string
             self::Midtrans => false,
         };
     }
+
+    /**
+     * Methods a staff member can record by hand.
+     *
+     * @return list<self>
+     */
+    public static function manualCases(): array
+    {
+        return array_values(array_filter(
+            self::cases(),
+            fn (self $method): bool => $method->isManual(),
+        ));
+    }
 }

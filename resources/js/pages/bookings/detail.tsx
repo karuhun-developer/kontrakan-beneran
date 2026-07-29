@@ -1,5 +1,11 @@
 import { router } from '@inertiajs/react';
-import { CalendarPlus, LogIn, LogOut, XCircle } from 'lucide-react';
+import {
+    CalendarPlus,
+    LogIn,
+    LogOut,
+    ReceiptText,
+    XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
@@ -8,9 +14,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useCan } from '@/hooks/use-can';
 import { formatDate, formatDateTime, formatRupiah } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import bookings from '@/routes/bookings';
+import invoices from '@/routes/invoices';
 import type { BookingDetail } from '@/types/master';
 
 type Panel = 'extend' | 'cancel' | null;
@@ -34,6 +42,7 @@ export default function BookingDetailModal({
     const [reason, setReason] = useState('');
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const canManageInvoice = useCan('invoice.manage');
 
     const submit = (
         url: string,
@@ -155,6 +164,24 @@ export default function BookingDetailModal({
                                 Perpanjang
                             </Button>
                         )}
+                        {canManageInvoice &&
+                            booking.status !== 'cancelled' && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={processing}
+                                    onClick={() =>
+                                        submit(
+                                            invoices.fromBooking(booking.id).url,
+                                            {},
+                                            close,
+                                        )
+                                    }
+                                >
+                                    <ReceiptText className="size-4" />
+                                    Buat Tagihan
+                                </Button>
+                            )}
                         {booking.can_cancel && (
                             <Button
                                 type="button"
