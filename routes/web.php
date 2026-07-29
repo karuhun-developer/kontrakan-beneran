@@ -59,6 +59,8 @@ Route::middleware(['auth', 'verified', 'role:super-admin|owner|admin|staff'])->g
         Route::post('bookings/{booking}/check-out', [BookingController::class, 'checkOut'])->name('bookings.check-out');
         Route::post('bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
         Route::post('bookings/{booking}/extend', [BookingController::class, 'extend'])->name('bookings.extend');
+
+        Route::post('penyewa/quick', [PenyewaController::class, 'quickStore'])->name('penyewa.quick-store');
     });
 });
 

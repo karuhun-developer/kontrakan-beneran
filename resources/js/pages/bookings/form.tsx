@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import { UserPlus, X } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,9 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatRupiah } from '@/lib/format';
+import { HttpError, postJson } from '@/lib/http';
 import bookings from '@/routes/bookings';
+import penyewa from '@/routes/penyewa';
 import type { SelectOption } from '@/types';
 
 type PageProps = {
@@ -36,6 +39,42 @@ export default function BookingForm({
         status: 'confirmed',
         notes: '',
     });
+
+    const [options, setOptions] = useState<SelectOption[]>(penyewaOptions);
+    const [showQuickCreate, setShowQuickCreate] = useState(false);
+    const [quick, setQuick] = useState({ name: '', phone: '', gender: '' });
+    const [quickErrors, setQuickErrors] = useState<Record<string, string>>({});
+    const [savingPenyewa, setSavingPenyewa] = useState(false);
+
+    const saveQuickPenyewa = async () => {
+        setSavingPenyewa(true);
+        setQuickErrors({});
+        try {
+            const created = await postJson<{ id: number; name: string }>(
+                penyewa.quickStore().url,
+                {
+                    name: quick.name,
+                    phone: quick.phone || null,
+                    gender: quick.gender || null,
+                },
+            );
+            setOptions((prev) => [
+                { value: created.id, label: created.name },
+                ...prev,
+            ]);
+            setData('penyewa_id', String(created.id));
+            setQuick({ name: '', phone: '', gender: '' });
+            setShowQuickCreate(false);
+        } catch (error) {
+            if (error instanceof HttpError && error.status === 422) {
+                setQuickErrors(error.errors);
+            } else {
+                setQuickErrors({ name: 'Gagal menyimpan penyewa.' });
+            }
+        } finally {
+            setSavingPenyewa(false);
+        }
+    };
 
     const selectedRoom = roomOptions.find(
         (option) => String(option.value) === data.room_id,
@@ -87,7 +126,27 @@ export default function BookingForm({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="penyewa_id">Penyewa</Label>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="penyewa_id">Penyewa</Label>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 gap-1.5 px-2 text-xs"
+                                    onClick={() =>
+                                        setShowQuickCreate((prev) => !prev)
+                                    }
+                                >
+                                    {showQuickCreate ? (
+                                        <X className="size-3.5" />
+                                    ) : (
+                                        <UserPlus className="size-3.5" />
+                                    )}
+                                    {showQuickCreate
+                                        ? 'Tutup'
+                                        : 'Penyewa baru'}
+                                </Button>
+                            </div>
                             <Select
                                 value={data.penyewa_id}
                                 onValueChange={(value) =>
@@ -98,7 +157,7 @@ export default function BookingForm({
                                     <SelectValue placeholder="Pilih penyewa" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {penyewaOptions.map((option) => (
+                                    {options.map((option) => (
                                         <SelectItem
                                             key={option.value}
                                             value={String(option.value)}
@@ -109,6 +168,90 @@ export default function BookingForm({
                                 </SelectContent>
                             </Select>
                             <InputError message={errors.penyewa_id} />
+
+                            {showQuickCreate && (
+                                <div className="mt-1 space-y-3 rounded-lg border bg-muted/30 p-3">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="quick_name">
+                                            Nama Penyewa
+                                        </Label>
+                                        <Input
+                                            id="quick_name"
+                                            value={quick.name}
+                                            onChange={(e) =>
+                                                setQuick((prev) => ({
+                                                    ...prev,
+                                                    name: e.target.value,
+                                                }))
+                                            }
+                                            placeholder="Nama lengkap"
+                                        />
+                                        <InputError
+                                            message={quickErrors.name}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2 sm:grid-cols-2">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="quick_phone">
+                                                No. HP
+                                            </Label>
+                                            <Input
+                                                id="quick_phone"
+                                                value={quick.phone}
+                                                onChange={(e) =>
+                                                    setQuick((prev) => ({
+                                                        ...prev,
+                                                        phone: e.target.value,
+                                                    }))
+                                                }
+                                                placeholder="Opsional"
+                                            />
+                                            <InputError
+                                                message={quickErrors.phone}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="quick_gender">
+                                                Gender
+                                            </Label>
+                                            <Select
+                                                value={quick.gender}
+                                                onValueChange={(value) =>
+                                                    setQuick((prev) => ({
+                                                        ...prev,
+                                                        gender: value,
+                                                    }))
+                                                }
+                                            >
+                                                <SelectTrigger id="quick_gender">
+                                                    <SelectValue placeholder="Pilih" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="male">
+                                                        Laki-laki
+                                                    </SelectItem>
+                                                    <SelectItem value="female">
+                                                        Perempuan
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={quickErrors.gender}
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        disabled={
+                                            savingPenyewa || !quick.name.trim()
+                                        }
+                                        onClick={saveQuickPenyewa}
+                                    >
+                                        Simpan & Pilih
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid gap-2 sm:grid-cols-2">

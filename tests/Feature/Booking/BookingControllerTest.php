@@ -132,6 +132,34 @@ class BookingControllerTest extends TestCase
         $this->post(route('bookings.check-in', $booking))->assertNotFound();
     }
 
+    public function test_staff_can_quick_create_a_penyewa_from_booking_form()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        $response = $this->postJson(route('penyewa.quick-store'), [
+            'name' => 'Walk-in Guest',
+            'phone' => '081234567890',
+            'gender' => 'male',
+        ]);
+
+        $response->assertOk()->assertJsonStructure(['id', 'name']);
+
+        $this->assertDatabaseHas('penyewas', [
+            'name' => 'Walk-in Guest',
+            'branch_id' => $this->branch->id,
+            'tenant_id' => $this->tenant->id,
+        ]);
+    }
+
+    public function test_quick_create_penyewa_requires_a_name()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        $this->postJson(route('penyewa.quick-store'), [
+            'phone' => '081234567890',
+        ])->assertUnprocessable()->assertJsonValidationErrors('name');
+    }
+
     public function test_index_only_shows_current_branch_bookings()
     {
         $this->actingAsRole(UserRole::Staff);

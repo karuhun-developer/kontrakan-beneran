@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Master;
 
+use App\Enums\CommonStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentBranch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\PenyewaRequest;
 use App\Models\Penyewa;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use InertiaUI\Modal\Modal;
@@ -59,6 +62,33 @@ class PenyewaController extends Controller
         }
 
         return to_route('penyewa.index')->with('success', 'Penyewa berhasil ditambahkan.');
+    }
+
+    /**
+     * Quick-create a penyewa from the booking form (front desk shortcut).
+     * Gated by booking.manage so staff without penyewa.manage can still use it.
+     */
+    public function quickStore(Request $request): JsonResponse
+    {
+        $branch = $this->currentBranch();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'gender' => ['nullable', 'in:male,female'],
+        ]);
+
+        $penyewa = Penyewa::create([
+            ...$validated,
+            'tenant_id' => $branch->tenant_id,
+            'branch_id' => $branch->id,
+            'status' => CommonStatus::Active,
+        ]);
+
+        return response()->json([
+            'id' => $penyewa->id,
+            'name' => $penyewa->name,
+        ]);
     }
 
     public function edit(Penyewa $penyewa): Modal
