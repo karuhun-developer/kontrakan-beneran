@@ -52,9 +52,103 @@ class CashflowController extends Controller
         return Inertia::render('billing/cashflows/index', [
             'cashflows' => $cashflows,
             'stats' => $this->buildStats($branch->id),
+            'calendar' => $this->buildCalendar($branch->id, $request->query('month')),
             'filters' => ['type' => $typeFilter?->value],
             'typeOptions' => $this->typeOptions(),
         ]);
+    }
+
+    /**
+     * Build the full-month calendar payload: a week grid with per-day income /
+     * expense totals, plus a monthly summary and per-category breakdown.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildCalendar(int $branchId, ?string $month): array
+    {
+        $monthStart = $this->resolveMonth($month);
+        $monthEndExclusive = $monthStart->addMonth();
+
+        $cashflows = Cashflow::forBranch($branchId)
+            ->with('category:id,name')
+            ->whereDate('occurred_on', '>=', $monthStart->toDateString())
+            ->whereDate('occurred_on', '<', $monthEndExclusive->toDateString())
+            ->get(['id', 'type', 'amount', 'occurred_on', 'cashflow_category_id']);
+
+        $byDate = [];
+        foreach ($cashflows as $cashflow) {
+            $key = $cashflow->occurred_on->toDateString();
+            $bucket = $cashflow->type === CashflowType::Income ? 'income' : 'expense';
+            $byDate[$key][$bucket] = ($byDate[$key][$bucket] ?? 0) + $cashflow->amount;
+        }
+
+        $gridStart = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
+        $gridEnd = $monthEndExclusive->subDay()->endOfWeek(CarbonImmutable::SUNDAY);
+
+        $weeks = [];
+        $cursor = $gridStart;
+        while ($cursor->lte($gridEnd)) {
+            $week = [];
+            for ($i = 0; $i < 7; $i++) {
+                $key = $cursor->toDateString();
+                $week[] = [
+                    'date' => $key,
+                    'day' => $cursor->day,
+                    'in_month' => $cursor->month === $monthStart->month,
+                    'is_today' => $cursor->isToday(),
+                    'is_weekend' => $cursor->isWeekend(),
+                    'income' => $byDate[$key]['income'] ?? 0,
+                    'expense' => $byDate[$key]['expense'] ?? 0,
+                ];
+                $cursor = $cursor->addDay();
+            }
+            $weeks[] = $week;
+        }
+
+        $incomeTotal = (int) $cashflows->filter(fn (Cashflow $c): bool => $c->type === CashflowType::Income)->sum('amount');
+        $expenseTotal = (int) $cashflows->filter(fn (Cashflow $c): bool => $c->type === CashflowType::Expense)->sum('amount');
+
+        $categories = $cashflows
+            ->groupBy(fn (Cashflow $c): string => $c->type->value.'|'.($c->category?->name ?? 'Tanpa Kategori'))
+            ->map(function ($group): array {
+                /** @var Cashflow $first */
+                $first = $group->first();
+
+                return [
+                    'name' => $first->category?->name ?? 'Tanpa Kategori',
+                    'type' => $first->type->value,
+                    'type_label' => $first->type->label(),
+                    'type_color' => $first->type->color(),
+                    'total' => (int) $group->sum('amount'),
+                ];
+            })
+            ->sortByDesc('total')
+            ->values()
+            ->all();
+
+        return [
+            'month' => $monthStart->format('Y-m'),
+            'month_label' => $monthStart->locale('id')->isoFormat('MMMM YYYY'),
+            'prev_month' => $monthStart->subMonth()->format('Y-m'),
+            'next_month' => $monthEndExclusive->format('Y-m'),
+            'weekdays' => ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+            'weeks' => $weeks,
+            'summary' => [
+                'income' => $incomeTotal,
+                'expense' => $expenseTotal,
+                'net' => $incomeTotal - $expenseTotal,
+            ],
+            'categories' => $categories,
+        ];
+    }
+
+    private function resolveMonth(?string $month): CarbonImmutable
+    {
+        if ($month !== null && preg_match('/^\d{4}-\d{2}$/', $month) === 1) {
+            return CarbonImmutable::createFromFormat('Y-m-d', "{$month}-01")->startOfMonth();
+        }
+
+        return CarbonImmutable::now()->startOfMonth();
     }
 
     public function create(): Modal

@@ -63,6 +63,39 @@ class CashflowControllerTest extends TestCase
             );
     }
 
+    public function test_index_includes_a_calendar_summary_for_the_month()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        Cashflow::factory()->forBranch($this->branch)->type(CashflowType::Income)
+            ->create(['amount' => 500_000, 'occurred_on' => now()->startOfMonth()->toDateString()]);
+        Cashflow::factory()->forBranch($this->branch)->type(CashflowType::Expense)
+            ->create(['amount' => 200_000, 'occurred_on' => now()->startOfMonth()->toDateString()]);
+
+        $this->get(route('cashflows.index'))
+            ->assertInertia(fn ($page) => $page
+                ->where('calendar.summary.income', 500_000)
+                ->where('calendar.summary.expense', 200_000)
+                ->where('calendar.summary.net', 300_000)
+                ->has('calendar.weeks')
+                ->has('calendar.categories', 2)
+            );
+    }
+
+    public function test_calendar_respects_the_month_query()
+    {
+        $this->actingAsRole(UserRole::Staff);
+
+        Cashflow::factory()->forBranch($this->branch)->type(CashflowType::Income)
+            ->create(['amount' => 500_000, 'occurred_on' => now()->toDateString()]);
+
+        $this->get(route('cashflows.index', ['month' => '2020-01']))
+            ->assertInertia(fn ($page) => $page
+                ->where('calendar.month', '2020-01')
+                ->where('calendar.summary.income', 0)
+            );
+    }
+
     public function test_index_filters_by_type()
     {
         $this->actingAsRole(UserRole::Staff);

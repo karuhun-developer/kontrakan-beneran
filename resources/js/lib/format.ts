@@ -8,6 +8,33 @@ export function formatRupiah(value: number | null | undefined): string {
     return rupiahFormatter.format(value ?? 0);
 }
 
+/** Compact rupiah for tight spaces (calendar cells): 1.5jt, 750rb, 2,1M. */
+export function formatRupiahShort(value: number | null | undefined): string {
+    const amount = value ?? 0;
+    const abs = Math.abs(amount);
+
+    if (abs >= 1_000_000_000) {
+        return `${trimZero(amount / 1_000_000_000)}M`;
+    }
+
+    if (abs >= 1_000_000) {
+        return `${trimZero(amount / 1_000_000)}jt`;
+    }
+
+    if (abs >= 1_000) {
+        return `${trimZero(amount / 1_000)}rb`;
+    }
+
+    return String(amount);
+}
+
+function trimZero(value: number): string {
+    return value
+        .toFixed(1)
+        .replace(/\.0$/, '')
+        .replace('.', ',');
+}
+
 const dateFormatter = new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'short',

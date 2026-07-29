@@ -238,6 +238,35 @@ export type CashflowStats = {
     expense_this_month: number;
 };
 
+export type CashflowCalendarDay = {
+    date: string;
+    day: number;
+    in_month: boolean;
+    is_today: boolean;
+    is_weekend: boolean;
+    income: number;
+    expense: number;
+};
+
+export type CashflowCategoryTotal = {
+    name: string;
+    type: string;
+    type_label: string;
+    type_color: string;
+    total: number;
+};
+
+export type CashflowCalendar = {
+    month: string;
+    month_label: string;
+    prev_month: string;
+    next_month: string;
+    weekdays: string[];
+    weeks: CashflowCalendarDay[][];
+    summary: { income: number; expense: number; net: number };
+    categories: CashflowCategoryTotal[];
+};
+
 export type CashflowCategoryOption = {
     value: number;
     label: string;
