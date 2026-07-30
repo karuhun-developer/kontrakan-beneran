@@ -3,6 +3,7 @@
 namespace Tests\Feature\Management;
 
 use App\Enums\UserRole;
+use App\Models\Branch;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -99,8 +100,10 @@ class TenantManagementTest extends TestCase
     public function test_owner_cannot_access_tenant_management()
     {
         $tenant = Tenant::factory()->create();
+        $branch = Branch::factory()->create(['tenant_id' => $tenant->id]);
         $owner = User::factory()->create(['tenant_id' => $tenant->id]);
         $owner->assignRole(UserRole::Owner->value);
+        $owner->branches()->sync([$branch->id]);
         $this->actingAs($owner);
 
         $this->get(route('management.tenants.index'))->assertForbidden();

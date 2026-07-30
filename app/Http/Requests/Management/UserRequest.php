@@ -21,13 +21,18 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user')?->id;
+        $user = $this->route('user');
+        $userId = $user?->id;
+        $isOwnerTarget = $user?->primaryRole() === UserRole::Owner;
 
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'password' => [$userId === null ? 'required' : 'nullable', 'string', 'min:8'],
-            'role' => ['required', Rule::in([UserRole::Admin->value, UserRole::Staff->value])],
+            // An owner's role is immutable, so it is ignored rather than validated.
+            'role' => $isOwnerTarget
+                ? ['nullable']
+                : ['required', Rule::in([UserRole::Admin->value, UserRole::Staff->value])],
             'branches' => ['array'],
             'branches.*' => ['integer', 'exists:branches,id'],
         ];

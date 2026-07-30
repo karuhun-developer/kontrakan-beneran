@@ -101,7 +101,7 @@ export default function DepositDetailModal({
                         </div>
                     </div>
 
-                    <div className="rounded-lg border divide-y px-4">
+                    <div className="divide-y rounded-lg border px-4">
                         <InfoRow
                             label="Ditahan Sejak"
                             value={formatDate(deposit.held_at)}
@@ -161,7 +161,9 @@ export default function DepositDetailModal({
                                 <InputError message={errors.amount} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="reason">Alasan (opsional)</Label>
+                                <Label htmlFor="reason">
+                                    Alasan (opsional)
+                                </Label>
                                 <Input
                                     id="reason"
                                     value={reason}
@@ -171,7 +173,9 @@ export default function DepositDetailModal({
                                 <InputError message={errors.reason} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="notes">Catatan (opsional)</Label>
+                                <Label htmlFor="notes">
+                                    Catatan (opsional)
+                                </Label>
                                 <Textarea
                                     id="notes"
                                     rows={2}
@@ -191,7 +195,9 @@ export default function DepositDetailModal({
 
                     {/* Ledger */}
                     <div>
-                        <p className="mb-3 text-sm font-medium">Riwayat Ledger</p>
+                        <p className="mb-3 text-sm font-medium">
+                            Riwayat Ledger
+                        </p>
                         {deposit.transactions.length === 0 ? (
                             <p className="text-sm text-muted-foreground">
                                 Belum ada transaksi.
@@ -245,11 +251,7 @@ export default function DepositDetailModal({
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={close}
-                        >
+                        <Button type="button" variant="outline" onClick={close}>
                             Tutup
                         </Button>
                     </div>

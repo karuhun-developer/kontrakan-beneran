@@ -4,12 +4,7 @@ import { Wallet } from 'lucide-react';
 import { Pagination } from '@/components/master/pagination';
 import { ColorBadge } from '@/components/master/status-badge';
 import { buttonVariants } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate, formatRupiah } from '@/lib/format';
 import portalDeposits from '@/routes/portal/deposits';
 import type { Paginated } from '@/types/master';
@@ -89,14 +84,17 @@ export default function PortalDepositsIndex() {
                                             />
                                         </div>
                                         <p className="text-sm text-muted-foreground">
-                                            Ditahan {formatRupiah(deposit.amount)}
+                                            Ditahan{' '}
+                                            {formatRupiah(deposit.amount)}
                                             {deposit.held_at
                                                 ? ` · ${formatDate(deposit.held_at)}`
                                                 : ''}
                                         </p>
                                     </div>
                                     <ModalLink
-                                        href={portalDeposits.show(deposit.id).url}
+                                        href={
+                                            portalDeposits.show(deposit.id).url
+                                        }
                                         className={buttonVariants({
                                             variant: 'outline',
                                             size: 'sm',

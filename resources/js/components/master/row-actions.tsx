@@ -1,5 +1,5 @@
-import { ModalLink } from '@inertiaui/modal-react';
 import { router } from '@inertiajs/react';
+import { ModalLink } from '@inertiaui/modal-react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -19,6 +19,7 @@ type RowActionsProps = {
     destroyRoute: RouteDefinition<'delete'>;
     label: string;
     canManage?: boolean;
+    canDelete?: boolean;
 };
 
 function hrefToUrl(href: RouteDefinition<'get'> | string): string {
@@ -30,6 +31,7 @@ export function RowActions({
     destroyRoute,
     label,
     canManage = true,
+    canDelete = true,
 }: RowActionsProps) {
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
@@ -58,39 +60,41 @@ export function RowActions({
                 <Pencil className="size-4" />
                 <span className="sr-only">Ubah</span>
             </ModalLink>
-            <Dialog open={open} onOpenChange={setOpen}>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => setOpen(true)}
-                >
-                    <Trash2 className="size-4" />
-                    <span className="sr-only">Hapus</span>
-                </Button>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Hapus {label}?</DialogTitle>
-                        <DialogDescription>
-                            Tindakan ini tidak dapat dibatalkan. Data{' '}
-                            <span className="font-medium">{label}</span> akan
-                            dihapus permanen.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Batal</Button>
-                        </DialogClose>
-                        <Button
-                            variant="destructive"
-                            onClick={handleDelete}
-                            disabled={processing}
-                        >
-                            Hapus
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            {canDelete && (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => setOpen(true)}
+                    >
+                        <Trash2 className="size-4" />
+                        <span className="sr-only">Hapus</span>
+                    </Button>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Hapus {label}?</DialogTitle>
+                            <DialogDescription>
+                                Tindakan ini tidak dapat dibatalkan. Data{' '}
+                                <span className="font-medium">{label}</span>{' '}
+                                akan dihapus permanen.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant="outline">Batal</Button>
+                            </DialogClose>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                                disabled={processing}
+                            >
+                                Hapus
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     );
 }

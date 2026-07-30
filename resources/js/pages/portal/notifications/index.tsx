@@ -100,7 +100,9 @@ export default function PortalNotificationsIndex() {
                                                     'Notifikasi'}
                                             </p>
                                             <p className="mt-0.5 text-xs text-muted-foreground">
-                                                {formatDateTime(item.created_at)}
+                                                {formatDateTime(
+                                                    item.created_at,
+                                                )}
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-1">
@@ -108,7 +110,8 @@ export default function PortalNotificationsIndex() {
                                                 <ModalLink
                                                     href={
                                                         portalInvoices.show(
-                                                            item.data.invoice_id,
+                                                            item.data
+                                                                .invoice_id,
                                                         ).url
                                                     }
                                                     onClick={() =>

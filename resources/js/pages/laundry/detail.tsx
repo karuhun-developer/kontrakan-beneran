@@ -9,13 +9,7 @@ import { formatDate, formatRupiah } from '@/lib/format';
 import laundry from '@/routes/laundry';
 import type { LaundryDetail } from '@/types/master';
 
-function InfoRow({
-    label,
-    value,
-}: {
-    label: string;
-    value: React.ReactNode;
-}) {
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     return (
         <div className="flex items-start justify-between gap-4 py-2 text-sm">
             <span className="text-muted-foreground">{label}</span>
@@ -46,7 +40,10 @@ export default function LaundryDetailModal({
     };
 
     return (
-        <ModalForm title={`Laundry ${order.number}`} description={order.penyewa}>
+        <ModalForm
+            title={`Laundry ${order.number}`}
+            description={order.penyewa}
+        >
             {(close) => (
                 <div className="space-y-6">
                     <div className="flex items-start justify-between">
@@ -67,7 +64,9 @@ export default function LaundryDetailModal({
                     </div>
 
                     <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
-                        <span className="text-sm font-semibold">Total Harga</span>
+                        <span className="text-sm font-semibold">
+                            Total Harga
+                        </span>
                         <span className="text-base font-semibold">
                             {formatRupiah(order.price)}
                         </span>
@@ -110,23 +109,21 @@ export default function LaundryDetailModal({
                         )}
                     </div>
 
-                    {canManage && order.can_advance && order.next_status_label && (
-                        <Button
-                            type="button"
-                            disabled={processing}
-                            onClick={() => advance(close)}
-                        >
-                            <ArrowRight className="size-4" />
-                            Tandai {order.next_status_label}
-                        </Button>
-                    )}
+                    {canManage &&
+                        order.can_advance &&
+                        order.next_status_label && (
+                            <Button
+                                type="button"
+                                disabled={processing}
+                                onClick={() => advance(close)}
+                            >
+                                <ArrowRight className="size-4" />
+                                Tandai {order.next_status_label}
+                            </Button>
+                        )}
 
                     <div className="flex justify-end pt-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={close}
-                        >
+                        <Button type="button" variant="outline" onClick={close}>
                             Tutup
                         </Button>
                     </div>

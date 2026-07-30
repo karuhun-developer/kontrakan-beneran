@@ -194,7 +194,8 @@ export default function DepositsIndex() {
                                         <TableCell>
                                             <ModalLink
                                                 href={
-                                                    deposits.show(deposit.id).url
+                                                    deposits.show(deposit.id)
+                                                        .url
                                                 }
                                                 className={buttonVariants({
                                                     variant: 'ghost',

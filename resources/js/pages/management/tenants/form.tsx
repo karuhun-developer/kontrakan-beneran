@@ -52,7 +52,9 @@ export default function TenantForm({ tenant }: PageProps) {
                     event.preventDefault();
 
                     if (isEdit && tenant) {
-                        put(tenants.update(tenant.id).url, { onSuccess: close });
+                        put(tenants.update(tenant.id).url, {
+                            onSuccess: close,
+                        });
                     } else {
                         post(tenants.store().url, { onSuccess: close });
                     }
@@ -65,7 +67,9 @@ export default function TenantForm({ tenant }: PageProps) {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 autoFocus
                                 placeholder="mis. Kost Melati Group"
                             />
@@ -122,7 +126,10 @@ export default function TenantForm({ tenant }: PageProps) {
                                         id="owner_name"
                                         value={data.owner_name}
                                         onChange={(e) =>
-                                            setData('owner_name', e.target.value)
+                                            setData(
+                                                'owner_name',
+                                                e.target.value,
+                                            )
                                         }
                                     />
                                     <InputError message={errors.owner_name} />

@@ -11,9 +11,11 @@ export type TenantSummary = {
 export type BranchContext = {
     current: BranchSummary | null;
     available: BranchSummary[];
+    canViewAll: boolean;
 };
 
 export type FlashMessages = {
     success: string | null;
     error: string | null;
+    warning: string | null;
 };

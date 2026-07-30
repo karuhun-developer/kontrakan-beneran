@@ -27,7 +27,9 @@ export type ManagedUserListItem = {
     email: string;
     role: string | null;
     role_label: string | null;
+    tenant: string | null;
     branches: string[];
+    is_owner: boolean;
 };
 
 export type ManagementSelectOption = {

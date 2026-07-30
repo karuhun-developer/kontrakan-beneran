@@ -134,8 +134,8 @@ export default function PortalLayout({
                     <div className="mx-auto flex w-full flex-wrap items-center gap-3 px-4 py-3 md:max-w-5xl">
                         <KeyRound className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                         <p className="text-sm text-amber-800 dark:text-amber-200">
-                            Kamu masih memakai kata sandi default. Ganti sekarang
-                            demi keamanan akunmu.
+                            Kamu masih memakai kata sandi default. Ganti
+                            sekarang demi keamanan akunmu.
                         </p>
                         <Button
                             asChild
@@ -143,7 +143,9 @@ export default function PortalLayout({
                             variant="outline"
                             className="ml-auto border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-100 dark:hover:bg-amber-900/40"
                         >
-                            <Link href={securityEdit().url}>Ganti Kata Sandi</Link>
+                            <Link href={securityEdit().url}>
+                                Ganti Kata Sandi
+                            </Link>
                         </Button>
                     </div>
                 </div>

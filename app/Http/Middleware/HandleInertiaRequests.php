@@ -71,10 +71,12 @@ class HandleInertiaRequests extends Middleware
                 'available' => $this->branchContext->accessible()
                     ->map(fn ($branch) => ['id' => $branch->id, 'name' => $branch->name])
                     ->values(),
+                'canViewAll' => (bool) $user?->isSuperAdmin(),
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+                'warning' => $request->session()->get('warning'),
             ],
             'notificationFeed' => $this->notificationsFor($user),
             'portal' => $this->portalStateFor($user),

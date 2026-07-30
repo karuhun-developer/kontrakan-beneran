@@ -1,5 +1,9 @@
 import type { Auth } from '@/types/auth';
-import type { BranchContext, FlashMessages, TenantSummary } from '@/types/branch';
+import type {
+    BranchContext,
+    FlashMessages,
+    TenantSummary,
+} from '@/types/branch';
 import type { NotificationFeed } from '@/types/notification';
 import type { PortalState } from '@/types/portal';
 

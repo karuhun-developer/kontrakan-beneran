@@ -149,4 +149,32 @@ class AccessControlTest extends TestCase
 
         $this->assertEquals($branch->id, session('current_branch_id'));
     }
+
+    public function test_super_admin_can_switch_to_all_branches()
+    {
+        $superadmin = User::factory()->create();
+        $superadmin->assignRole(UserRole::SuperAdmin->value);
+
+        $this->actingAs($superadmin)
+            ->withSession(['current_branch_id' => 123])
+            ->put(route('branch.switch'), ['branch_id' => 0])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue((bool) session('current_branch_all'));
+        $this->assertNull(session('current_branch_id'));
+    }
+
+    public function test_non_super_admin_cannot_switch_to_all_branches()
+    {
+        $tenant = Tenant::factory()->create();
+        $branch = Branch::factory()->create(['tenant_id' => $tenant->id]);
+
+        $owner = User::factory()->create(['tenant_id' => $tenant->id]);
+        $owner->assignRole(UserRole::Owner->value);
+        $owner->branches()->sync([$branch->id]);
+
+        $this->actingAs($owner)
+            ->put(route('branch.switch'), ['branch_id' => 0])
+            ->assertForbidden();
+    }
 }

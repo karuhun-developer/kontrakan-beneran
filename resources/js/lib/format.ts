@@ -29,10 +29,7 @@ export function formatRupiahShort(value: number | null | undefined): string {
 }
 
 function trimZero(value: number): string {
-    return value
-        .toFixed(1)
-        .replace(/\.0$/, '')
-        .replace('.', ',');
+    return value.toFixed(1).replace(/\.0$/, '').replace('.', ',');
 }
 
 const dateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -68,5 +65,7 @@ export function formatDateTime(value: string | null | undefined): string {
 
     const parsed = new Date(value.replace(' ', 'T'));
 
-    return Number.isNaN(parsed.getTime()) ? '—' : dateTimeFormatter.format(parsed);
+    return Number.isNaN(parsed.getTime())
+        ? '—'
+        : dateTimeFormatter.format(parsed);
 }

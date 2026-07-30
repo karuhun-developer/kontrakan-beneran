@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { Building2, Check, ChevronsUpDown } from 'lucide-react';
+import { Building2, Check, ChevronsUpDown, Layers } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,11 +21,14 @@ export function BranchSwitcher() {
     const { state } = useSidebar();
     const isMobile = useIsMobile();
 
-    const { current, available } = branchContext;
+    const { current, available, canViewAll } = branchContext;
 
     if (available.length === 0) {
         return null;
     }
+
+    // Super admins in "Semua Cabang" mode have no single active branch.
+    const viewingAll = canViewAll && current === null;
 
     const switchBranch = (branchId: number) => {
         if (branchId === current?.id) {
@@ -35,6 +38,18 @@ export function BranchSwitcher() {
         router.put(
             '/branch/switch',
             { branch_id: branchId },
+            { preserveScroll: true, preserveState: false },
+        );
+    };
+
+    const switchToAll = () => {
+        if (viewingAll) {
+            return;
+        }
+
+        router.put(
+            '/branch/switch',
+            { branch_id: 0 },
             { preserveScroll: true, preserveState: false },
         );
     };
@@ -57,7 +72,10 @@ export function BranchSwitcher() {
                                     Cabang
                                 </span>
                                 <span className="truncate font-medium">
-                                    {current?.name ?? 'Pilih cabang'}
+                                    {current?.name ??
+                                        (viewingAll
+                                            ? 'Semua Cabang'
+                                            : 'Pilih cabang')}
                                 </span>
                             </div>
                             <ChevronsUpDown className="ml-auto size-4" />
@@ -78,6 +96,18 @@ export function BranchSwitcher() {
                             Cabang
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        {canViewAll && (
+                            <DropdownMenuItem
+                                onSelect={switchToAll}
+                                className="gap-2"
+                            >
+                                <Layers className="size-4 text-muted-foreground" />
+                                <span className="flex-1 truncate">
+                                    Semua Cabang
+                                </span>
+                                {viewingAll && <Check className="size-4" />}
+                            </DropdownMenuItem>
+                        )}
                         {available.map((branch) => (
                             <DropdownMenuItem
                                 key={branch.id}

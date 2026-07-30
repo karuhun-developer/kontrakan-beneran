@@ -64,12 +64,8 @@ function StatCard({
 }
 
 export default function LaundryIndex() {
-    const {
-        orders,
-        stats,
-        filters,
-        statusOptions,
-    } = usePage<PageProps>().props;
+    const { orders, stats, filters, statusOptions } =
+        usePage<PageProps>().props;
     const canManage = useCan('laundry.manage');
 
     const applyStatus = (status: string | null) => {
@@ -202,7 +198,9 @@ export default function LaundryIndex() {
                                         </TableCell>
                                         <TableCell>
                                             <ModalLink
-                                                href={laundry.show(order.id).url}
+                                                href={
+                                                    laundry.show(order.id).url
+                                                }
                                                 className={buttonVariants({
                                                     variant: 'ghost',
                                                     size: 'icon',

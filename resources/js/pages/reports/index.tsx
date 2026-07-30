@@ -80,8 +80,7 @@ function StatCard({
 }
 
 export default function ReportsIndex() {
-    const { filters, summary, categories, trend } =
-        usePage<PageProps>().props;
+    const { filters, summary, categories, trend } = usePage<PageProps>().props;
     const [start, setStart] = useState(filters.start);
     const [end, setEnd] = useState(filters.end);
 
@@ -138,7 +137,10 @@ export default function ReportsIndex() {
                             </div>
                             <Button type="submit">Terapkan</Button>
                             <a
-                                href={reports.export({ query: { start, end } }).url}
+                                href={
+                                    reports.export({ query: { start, end } })
+                                        .url
+                                }
                                 className={cn(
                                     buttonVariants({ variant: 'outline' }),
                                     'ml-auto',

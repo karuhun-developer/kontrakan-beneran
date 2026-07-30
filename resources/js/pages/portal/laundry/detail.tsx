@@ -4,13 +4,7 @@ import { Button } from '@/components/ui/button';
 import { formatDate, formatRupiah } from '@/lib/format';
 import type { PortalLaundryDetail } from '@/types/portal';
 
-function InfoRow({
-    label,
-    value,
-}: {
-    label: string;
-    value: React.ReactNode;
-}) {
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     return (
         <div className="flex items-start justify-between gap-4 py-2 text-sm">
             <span className="text-muted-foreground">{label}</span>

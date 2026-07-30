@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers\Management;
 
-use App\Http\Controllers\Concerns\ResolvesCurrentBranch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\BranchRequest;
 use App\Models\Branch;
+use App\Support\BranchContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use InertiaUI\Modal\Modal;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class BranchController extends Controller
 {
-    use ResolvesCurrentBranch;
-
     public function index(): Response
     {
-        $tenantId = $this->currentBranch()->tenant_id;
+        $tenantId = $this->tenantId();
 
         $branches = Branch::query()
             ->where('tenant_id', $tenantId)
@@ -50,7 +49,7 @@ class BranchController extends Controller
 
     public function store(BranchRequest $request): RedirectResponse
     {
-        $tenantId = $this->currentBranch()->tenant_id;
+        $tenantId = $this->tenantId();
 
         Branch::create([
             ...$request->validated(),
@@ -102,7 +101,22 @@ class BranchController extends Controller
      */
     private function authorizeTenant(Branch $branch): void
     {
-        abort_unless($branch->tenant_id === $this->currentBranch()->tenant_id, 404);
+        abort_unless($branch->tenant_id === $this->tenantId(), 404);
+    }
+
+    /**
+     * The tenant whose branches are being managed: the active branch's tenant
+     * when one is selected, otherwise the authenticated user's own tenant so a
+     * branchless owner can still set up their first branch.
+     */
+    private function tenantId(): int
+    {
+        $tenantId = app(BranchContext::class)->current()?->tenant_id
+            ?? request()->user()?->tenant_id;
+
+        abort_if($tenantId === null, HttpResponse::HTTP_CONFLICT, 'Tidak ada tenant aktif.');
+
+        return $tenantId;
     }
 
     /**

@@ -17,8 +17,7 @@ type PageProps = {
 };
 
 export default function PortalInvoicesIndex() {
-    const { invoices, filters, statusOptions } =
-        usePage<PageProps>().props;
+    const { invoices, filters, statusOptions } = usePage<PageProps>().props;
 
     const applyStatus = (status: string | null) => {
         router.get(portalInvoices.index().url, status ? { status } : {}, {
@@ -141,7 +140,5 @@ export default function PortalInvoicesIndex() {
 }
 
 PortalInvoicesIndex.layout = {
-    breadcrumbs: [
-        { title: 'Tagihan', href: portalInvoices.index() },
-    ],
+    breadcrumbs: [{ title: 'Tagihan', href: portalInvoices.index() }],
 };

@@ -18,11 +18,18 @@ import type { ManagedUserListItem, Paginated } from '@/types';
 
 type PageProps = {
     users: Paginated<ManagedUserListItem>;
+    canViewTenants: boolean;
+    canCreate: boolean;
 };
 
 export default function UsersIndex() {
-    const { users: data } = usePage<PageProps>().props;
+    const {
+        users: data,
+        canViewTenants,
+        canCreate,
+    } = usePage<PageProps>().props;
     const canManage = useCan('tenant.member.manage');
+    const columnCount = canViewTenants ? 5 : 4;
 
     return (
         <>
@@ -30,9 +37,9 @@ export default function UsersIndex() {
             <div className="flex flex-col gap-6 p-4">
                 <PageHeader
                     title="Pengguna"
-                    description="Kelola akun admin cabang dan staff, serta penugasan cabangnya."
+                    description="Kelola akun owner, admin cabang, dan staff beserta penugasan cabangnya."
                     action={
-                        canManage
+                        canManage && canCreate
                             ? {
                                   label: 'Tambah Pengguna',
                                   href: users.create(),
@@ -48,6 +55,9 @@ export default function UsersIndex() {
                                 <TableRow>
                                     <TableHead>Nama</TableHead>
                                     <TableHead>Peran</TableHead>
+                                    {canViewTenants && (
+                                        <TableHead>Bisnis</TableHead>
+                                    )}
                                     <TableHead>Cabang</TableHead>
                                     <TableHead className="text-right">
                                         Aksi
@@ -58,7 +68,7 @@ export default function UsersIndex() {
                                 {data.data.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={4}
+                                            colSpan={columnCount}
                                             className="py-10 text-center text-muted-foreground"
                                         >
                                             Belum ada pengguna.
@@ -77,11 +87,24 @@ export default function UsersIndex() {
                                         </TableCell>
                                         <TableCell>
                                             {user.role_label && (
-                                                <Badge variant="secondary">
+                                                <Badge
+                                                    variant={
+                                                        user.is_owner
+                                                            ? 'default'
+                                                            : 'secondary'
+                                                    }
+                                                >
                                                     {user.role_label}
                                                 </Badge>
                                             )}
                                         </TableCell>
+                                        {canViewTenants && (
+                                            <TableCell>
+                                                <span className="text-sm">
+                                                    {user.tenant ?? '—'}
+                                                </span>
+                                            </TableCell>
+                                        )}
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">
                                                 {user.branches.length === 0 ? (
@@ -110,6 +133,7 @@ export default function UsersIndex() {
                                                     user.id,
                                                 )}
                                                 canManage={canManage}
+                                                canDelete={!user.is_owner}
                                             />
                                         </TableCell>
                                     </TableRow>

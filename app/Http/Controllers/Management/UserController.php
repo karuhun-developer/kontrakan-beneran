@@ -3,24 +3,24 @@
 namespace App\Http\Controllers\Management;
 
 use App\Enums\UserRole;
-use App\Http\Controllers\Concerns\ResolvesCurrentBranch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\UserRequest;
 use App\Models\Branch;
 use App\Models\User;
+use App\Support\BranchContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 use InertiaUI\Modal\Modal;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class UserController extends Controller
 {
-    use ResolvesCurrentBranch;
-
     /**
-     * Roles an owner may assign to their staff.
+     * Roles that can be assigned through this screen. Owners are provisioned via
+     * the tenant flow, never here, and their role can never be changed.
      *
      * @var array<int, UserRole>
      */
@@ -28,12 +28,12 @@ class UserController extends Controller
 
     public function index(): Response
     {
-        $tenantId = $this->currentBranch()->tenant_id;
+        $tenantId = $this->resolveTenantId();
 
         $users = User::query()
-            ->where('tenant_id', $tenantId)
-            ->role(array_map(fn (UserRole $role): string => $role->value, self::ASSIGNABLE_ROLES))
-            ->with(['roles:id,name', 'branches:id,name'])
+            ->role($this->roleValues($this->visibleRoles()))
+            ->when($tenantId !== null, fn ($query) => $query->where('tenant_id', $tenantId))
+            ->with(['roles:id,name', 'branches:id,name', 'tenant:id,name'])
             ->orderBy('name')
             ->paginate(15)
             ->through(fn (User $user): array => [
@@ -42,26 +42,31 @@ class UserController extends Controller
                 'email' => $user->email,
                 'role' => $user->primaryRole()?->value,
                 'role_label' => $user->primaryRole()?->label(),
+                'tenant' => $user->tenant?->name,
                 'branches' => $user->branches->pluck('name')->values(),
+                'is_owner' => $user->primaryRole() === UserRole::Owner,
             ]);
 
         return Inertia::render('management/users/index', [
             'users' => $users,
-            'roleOptions' => $this->roleOptions(),
+            'canViewTenants' => $this->actor()->isSuperAdmin(),
+            'canCreate' => $tenantId !== null,
         ]);
     }
 
     public function create(): Modal
     {
+        $tenantId = $this->requireTenantId();
+
         return Inertia::modal('management/users/form', [
             'roleOptions' => $this->roleOptions(),
-            'branchOptions' => $this->branchOptions(),
+            'branchOptions' => $this->branchOptions($tenantId),
         ])->baseRoute('management.users.index');
     }
 
     public function store(UserRequest $request): RedirectResponse
     {
-        $tenantId = $this->currentBranch()->tenant_id;
+        $tenantId = $this->requireTenantId();
 
         DB::transaction(function () use ($request, $tenantId): void {
             $user = User::create([
@@ -80,7 +85,7 @@ class UserController extends Controller
 
     public function edit(User $user): Modal
     {
-        $this->authorizeTenant($user);
+        $this->authorizeManage($user);
 
         return Inertia::modal('management/users/form', [
             'user' => [
@@ -88,20 +93,20 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->primaryRole()?->value,
+                'role_label' => $user->primaryRole()?->label(),
+                'is_owner' => $user->primaryRole() === UserRole::Owner,
                 'branches' => $user->branches()->pluck('branches.id')->values(),
             ],
             'roleOptions' => $this->roleOptions(),
-            'branchOptions' => $this->branchOptions(),
+            'branchOptions' => $this->branchOptions($user->tenant_id),
         ])->baseRoute('management.users.index');
     }
 
     public function update(UserRequest $request, User $user): RedirectResponse
     {
-        $this->authorizeTenant($user);
+        $this->authorizeManage($user);
 
-        $tenantId = $this->currentBranch()->tenant_id;
-
-        DB::transaction(function () use ($request, $user, $tenantId): void {
+        DB::transaction(function () use ($request, $user): void {
             $user->update([
                 'name' => $request->validated('name'),
                 'email' => $request->validated('email'),
@@ -111,8 +116,11 @@ class UserController extends Controller
                 $user->update(['password' => Hash::make($request->validated('password'))]);
             }
 
-            $user->syncRoles([$request->validated('role')]);
-            $user->branches()->sync($this->tenantBranchIds($request->validated('branches', []), $tenantId));
+            // An owner's role and branch scope are fixed; only their profile changes.
+            if ($user->primaryRole() !== UserRole::Owner) {
+                $user->syncRoles([$request->validated('role')]);
+                $user->branches()->sync($this->tenantBranchIds($request->validated('branches', []), $user->tenant_id));
+            }
         });
 
         return to_route('management.users.index')->with('success', 'Pengguna berhasil diperbarui.');
@@ -120,7 +128,10 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
-        $this->authorizeTenant($user);
+        $this->authorizeManage($user);
+
+        // Owners are removed by deleting their tenant, never from here.
+        abort_if($user->primaryRole() === UserRole::Owner, HttpResponse::HTTP_FORBIDDEN);
 
         $user->delete();
 
@@ -128,16 +139,82 @@ class UserController extends Controller
     }
 
     /**
-     * Only manage branch-level staff inside the active tenant.
+     * The authenticated actor: an owner (manages their own staff) or a
+     * super-admin (manages owners and staff across tenants).
      */
-    private function authorizeTenant(User $user): void
+    private function actor(): User
     {
-        abort_unless($user->tenant_id === $this->currentBranch()->tenant_id, 404);
-        abort_unless(in_array($user->primaryRole(), self::ASSIGNABLE_ROLES, true), 404);
+        return request()->user();
     }
 
     /**
-     * Keep only branch ids that belong to the active tenant.
+     * Roles the actor is allowed to see and manage.
+     *
+     * @return array<int, UserRole>
+     */
+    private function visibleRoles(): array
+    {
+        return $this->actor()->isSuperAdmin()
+            ? [UserRole::Owner, UserRole::Admin, UserRole::Staff]
+            : self::ASSIGNABLE_ROLES;
+    }
+
+    /**
+     * Ensure the target user is within the actor's tenant scope and role reach.
+     */
+    private function authorizeManage(User $user): void
+    {
+        abort_unless(in_array($user->primaryRole(), $this->visibleRoles(), true), 404);
+
+        $tenantId = $this->resolveTenantId();
+
+        if ($tenantId !== null) {
+            abort_unless($user->tenant_id === $tenantId, 404);
+        }
+    }
+
+    /**
+     * The tenant being managed: the active branch's tenant, the actor's own
+     * tenant, or null when a super-admin is viewing every branch at once.
+     */
+    private function resolveTenantId(): ?int
+    {
+        $current = app(BranchContext::class)->current();
+
+        if ($current !== null) {
+            return $current->tenant_id;
+        }
+
+        $user = $this->actor();
+
+        if ($user->isSuperAdmin()) {
+            return null;
+        }
+
+        abort_if($user->tenant_id === null, HttpResponse::HTTP_CONFLICT, 'Tidak ada tenant aktif.');
+
+        return $user->tenant_id;
+    }
+
+    /**
+     * Resolve a concrete tenant for write operations, which cannot target the
+     * cross-branch overview.
+     */
+    private function requireTenantId(): int
+    {
+        $tenantId = $this->resolveTenantId();
+
+        abort_if(
+            $tenantId === null,
+            HttpResponse::HTTP_CONFLICT,
+            'Pilih cabang atau bisnis tertentu sebelum mengelola pengguna.',
+        );
+
+        return $tenantId;
+    }
+
+    /**
+     * Keep only branch ids that belong to the given tenant.
      *
      * @param  array<int, int|string>  $ids
      * @return array<int, int>
@@ -149,6 +226,15 @@ class UserController extends Controller
             ->whereIn('id', $ids)
             ->pluck('id')
             ->all();
+    }
+
+    /**
+     * @param  array<int, UserRole>  $roles
+     * @return array<int, string>
+     */
+    private function roleValues(array $roles): array
+    {
+        return array_map(fn (UserRole $role): string => $role->value, $roles);
     }
 
     /**
@@ -165,10 +251,10 @@ class UserController extends Controller
     /**
      * @return list<array{value: int, label: string}>
      */
-    private function branchOptions(): array
+    private function branchOptions(int $tenantId): array
     {
         return Branch::query()
-            ->where('tenant_id', $this->currentBranch()->tenant_id)
+            ->where('tenant_id', $tenantId)
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn (Branch $branch): array => ['value' => $branch->id, 'label' => $branch->name])

@@ -79,7 +79,9 @@ export default function RoomTypesIndex() {
                                         <TableCell>
                                             {formatRupiah(type.monthly_price)}
                                         </TableCell>
-                                        <TableCell>{type.rooms_count}</TableCell>
+                                        <TableCell>
+                                            {type.rooms_count}
+                                        </TableCell>
                                         <TableCell>
                                             <StatusBadge
                                                 label={type.status_label}

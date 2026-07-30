@@ -39,6 +39,20 @@ class UserManagementTest extends TestCase
         return $user;
     }
 
+    /**
+     * A super-admin viewing every tenant at once ("Semua Cabang").
+     */
+    private function actingAsSuperAdmin(): User
+    {
+        $user = User::factory()->create();
+        $user->assignRole(UserRole::SuperAdmin->value);
+
+        $this->actingAs($user);
+        $this->withSession(['current_branch_all' => true]);
+
+        return $user;
+    }
+
     public function test_owner_can_view_the_users_page()
     {
         $this->actingAsRole(UserRole::Owner);
@@ -140,5 +154,80 @@ class UserManagementTest extends TestCase
         $this->actingAsRole(UserRole::Owner);
 
         $this->get(route('management.users.edit', $stranger))->assertNotFound();
+    }
+
+    public function test_owner_cannot_edit_another_owner()
+    {
+        $this->actingAsRole(UserRole::Owner);
+
+        $coOwner = User::factory()->create(['tenant_id' => $this->tenant->id]);
+        $coOwner->assignRole(UserRole::Owner->value);
+
+        $this->get(route('management.users.edit', $coOwner))->assertNotFound();
+    }
+
+    public function test_super_admin_can_see_owner_accounts()
+    {
+        $this->actingAsSuperAdmin();
+
+        $owner = User::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'AAA Owner']);
+        $owner->assignRole(UserRole::Owner->value);
+        $staff = User::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'ZZZ Staff']);
+        $staff->assignRole(UserRole::Staff->value);
+
+        $this->get(route('management.users.index'))
+            ->assertInertia(fn ($page) => $page
+                ->component('management/users/index')
+                ->where('canViewTenants', true)
+                ->has('users.data', 2)
+                ->where('users.data.0.role', 'owner')
+                ->where('users.data.0.is_owner', true)
+            );
+    }
+
+    public function test_super_admin_lists_users_across_all_tenants()
+    {
+        $this->actingAsSuperAdmin();
+
+        $ownerA = User::factory()->create(['tenant_id' => $this->tenant->id]);
+        $ownerA->assignRole(UserRole::Owner->value);
+
+        $otherTenant = Tenant::factory()->create();
+        $ownerB = User::factory()->create(['tenant_id' => $otherTenant->id]);
+        $ownerB->assignRole(UserRole::Owner->value);
+
+        $this->get(route('management.users.index'))
+            ->assertInertia(fn ($page) => $page->has('users.data', 2));
+    }
+
+    public function test_super_admin_cannot_change_an_owner_role()
+    {
+        $this->actingAsSuperAdmin();
+
+        $owner = User::factory()->create(['tenant_id' => $this->tenant->id]);
+        $owner->assignRole(UserRole::Owner->value);
+
+        $this->put(route('management.users.update', $owner), [
+            'name' => 'Owner Baru',
+            'email' => $owner->email,
+            'role' => UserRole::Admin->value,
+        ])->assertRedirect();
+
+        $owner->refresh();
+        $this->assertSame('Owner Baru', $owner->name);
+        $this->assertTrue($owner->hasRole(UserRole::Owner->value));
+        $this->assertFalse($owner->hasRole(UserRole::Admin->value));
+    }
+
+    public function test_super_admin_cannot_delete_an_owner()
+    {
+        $this->actingAsSuperAdmin();
+
+        $owner = User::factory()->create(['tenant_id' => $this->tenant->id]);
+        $owner->assignRole(UserRole::Owner->value);
+
+        $this->delete(route('management.users.destroy', $owner))->assertForbidden();
+
+        $this->assertDatabaseHas('users', ['id' => $owner->id]);
     }
 }

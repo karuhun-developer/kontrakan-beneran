@@ -131,8 +131,8 @@ export default function LaundryForm({
                             </Select>
                             <InputError message={errors.payment_source} />
                             <p className="text-xs text-muted-foreground">
-                                Potong deposit langsung mengurangi saldo penyewa;
-                                masuk tagihan membuat tagihan baru.
+                                Potong deposit langsung mengurangi saldo
+                                penyewa; masuk tagihan membuat tagihan baru.
                             </p>
                         </div>
 
@@ -142,7 +142,9 @@ export default function LaundryForm({
                                 id="notes"
                                 rows={2}
                                 value={data.notes}
-                                onChange={(e) => setData('notes', e.target.value)}
+                                onChange={(e) =>
+                                    setData('notes', e.target.value)
+                                }
                             />
                             <InputError message={errors.notes} />
                         </div>
@@ -158,7 +160,9 @@ export default function LaundryForm({
                             <Button
                                 type="submit"
                                 disabled={
-                                    processing || !data.penyewa_id || !data.price
+                                    processing ||
+                                    !data.penyewa_id ||
+                                    !data.price
                                 }
                             >
                                 Simpan Order

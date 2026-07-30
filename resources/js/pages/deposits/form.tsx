@@ -87,7 +87,9 @@ export default function DepositForm({ penyewaOptions }: PageProps) {
                                 id="notes"
                                 rows={2}
                                 value={data.notes}
-                                onChange={(e) => setData('notes', e.target.value)}
+                                onChange={(e) =>
+                                    setData('notes', e.target.value)
+                                }
                             />
                             <InputError message={errors.notes} />
                         </div>

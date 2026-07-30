@@ -69,7 +69,10 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                     event.preventDefault();
 
                     if (isEdit && model) {
-                        transform((payload) => ({ ...payload, _method: 'put' }));
+                        transform((payload) => ({
+                            ...payload,
+                            _method: 'put',
+                        }));
                         post(penyewa.update(model.id).url, {
                             forceFormData: true,
                             onSuccess: close,
@@ -89,7 +92,9 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 autoFocus
                             />
                             <InputError message={errors.name} />
@@ -153,7 +158,10 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                                     id="id_card_number"
                                     value={data.id_card_number}
                                     onChange={(e) =>
-                                        setData('id_card_number', e.target.value)
+                                        setData(
+                                            'id_card_number',
+                                            e.target.value,
+                                        )
                                     }
                                 />
                                 <InputError message={errors.id_card_number} />
@@ -247,7 +255,10 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                                     min={1}
                                     value={data.deposit_amount}
                                     onChange={(e) =>
-                                        setData('deposit_amount', e.target.value)
+                                        setData(
+                                            'deposit_amount',
+                                            e.target.value,
+                                        )
                                     }
                                     placeholder="mis. 1000000"
                                 />
@@ -303,7 +314,9 @@ export default function PenyewaForm({ penyewa: model }: PageProps) {
                                             )
                                         }
                                     />
-                                    <InputError message={account.errors.email} />
+                                    <InputError
+                                        message={account.errors.email}
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="account_password">

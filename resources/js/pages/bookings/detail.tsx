@@ -80,7 +80,7 @@ export default function BookingDetailModal({
                         />
                     </div>
 
-                    <div className="rounded-lg border divide-y px-4">
+                    <div className="divide-y rounded-lg border px-4">
                         <InfoRow
                             label="Tanggal Mulai"
                             value={formatDate(booking.start_date)}
@@ -157,38 +157,41 @@ export default function BookingDetailModal({
                                 type="button"
                                 variant="outline"
                                 onClick={() =>
-                                    setPanel(panel === 'extend' ? null : 'extend')
+                                    setPanel(
+                                        panel === 'extend' ? null : 'extend',
+                                    )
                                 }
                             >
                                 <CalendarPlus className="size-4" />
                                 Perpanjang
                             </Button>
                         )}
-                        {canManageInvoice &&
-                            booking.status !== 'cancelled' && (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    disabled={processing}
-                                    onClick={() =>
-                                        submit(
-                                            invoices.fromBooking(booking.id).url,
-                                            {},
-                                            close,
-                                        )
-                                    }
-                                >
-                                    <ReceiptText className="size-4" />
-                                    Buat Tagihan
-                                </Button>
-                            )}
+                        {canManageInvoice && booking.status !== 'cancelled' && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={processing}
+                                onClick={() =>
+                                    submit(
+                                        invoices.fromBooking(booking.id).url,
+                                        {},
+                                        close,
+                                    )
+                                }
+                            >
+                                <ReceiptText className="size-4" />
+                                Buat Tagihan
+                            </Button>
+                        )}
                         {booking.can_cancel && (
                             <Button
                                 type="button"
                                 variant="outline"
                                 className="text-red-600 hover:text-red-600"
                                 onClick={() =>
-                                    setPanel(panel === 'cancel' ? null : 'cancel')
+                                    setPanel(
+                                        panel === 'cancel' ? null : 'cancel',
+                                    )
                                 }
                             >
                                 <XCircle className="size-4" />
@@ -293,11 +296,7 @@ export default function BookingDetailModal({
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={close}
-                        >
+                        <Button type="button" variant="outline" onClick={close}>
                             Tutup
                         </Button>
                     </div>

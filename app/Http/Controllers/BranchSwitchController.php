@@ -18,6 +18,16 @@ class BranchSwitchController extends Controller
             'branch_id' => ['required', 'integer'],
         ]);
 
+        // Sentinel 0 → super admins switch to the cross-branch overview.
+        if ($validated['branch_id'] === 0) {
+            abort_unless($request->user()->isSuperAdmin(), 403);
+
+            $request->session()->put('current_branch_all', true);
+            $request->session()->forget('current_branch_id');
+
+            return back();
+        }
+
         $branch = Branch::findOrFail($validated['branch_id']);
 
         if (! $request->user()->canAccessBranch($branch)) {
@@ -26,6 +36,7 @@ class BranchSwitchController extends Controller
             ]);
         }
 
+        $request->session()->forget('current_branch_all');
         $request->session()->put('current_branch_id', $branch->id);
 
         return back();

@@ -64,7 +64,9 @@ export default function RoomTypeForm({ roomType }: PageProps) {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 autoFocus
                                 placeholder="mis. Standard, Deluxe"
                             />

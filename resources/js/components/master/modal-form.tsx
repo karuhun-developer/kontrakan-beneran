@@ -30,33 +30,33 @@ export function ModalForm({ title, description, children }: ModalFormProps) {
         >
             {({ close }: { close: () => void }) => (
                 <ModalContainerContext.Provider value={panel}>
-                <div ref={setPanel} className="flex min-h-screen flex-col">
-                    <header className="flex items-start justify-between gap-4 border-b px-8 py-6">
-                        <div className="space-y-1">
-                            <h2 className="text-lg font-semibold tracking-tight">
-                                {title}
-                            </h2>
-                            {description && (
-                                <p className="text-sm text-muted-foreground">
-                                    {description}
-                                </p>
-                            )}
+                    <div ref={setPanel} className="flex min-h-screen flex-col">
+                        <header className="flex items-start justify-between gap-4 border-b px-8 py-6">
+                            <div className="space-y-1">
+                                <h2 className="text-lg font-semibold tracking-tight">
+                                    {title}
+                                </h2>
+                                {description && (
+                                    <p className="text-sm text-muted-foreground">
+                                        {description}
+                                    </p>
+                                )}
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={close}
+                                className="-mr-2 shrink-0 text-muted-foreground"
+                                aria-label="Tutup"
+                            >
+                                <X className="size-5" />
+                            </Button>
+                        </header>
+                        <div className="flex-1 overflow-y-auto px-8 py-6">
+                            {children(close)}
                         </div>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={close}
-                            className="-mr-2 shrink-0 text-muted-foreground"
-                            aria-label="Tutup"
-                        >
-                            <X className="size-5" />
-                        </Button>
-                    </header>
-                    <div className="flex-1 overflow-y-auto px-8 py-6">
-                        {children(close)}
                     </div>
-                </div>
                 </ModalContainerContext.Provider>
             )}
         </Modal>

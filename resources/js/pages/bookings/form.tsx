@@ -228,9 +228,7 @@ export default function BookingForm({
                                     ) : (
                                         <UserPlus className="size-3.5" />
                                     )}
-                                    {showQuickCreate
-                                        ? 'Tutup'
-                                        : 'Penyewa baru'}
+                                    {showQuickCreate ? 'Tutup' : 'Penyewa baru'}
                                 </Button>
                             </div>
                             <Select
@@ -424,7 +422,9 @@ export default function BookingForm({
                                 <InputError message={errors.start_date} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="end_date">Tanggal Selesai</Label>
+                                <Label htmlFor="end_date">
+                                    Tanggal Selesai
+                                </Label>
                                 <Input
                                     id="end_date"
                                     type="date"
@@ -469,7 +469,9 @@ export default function BookingForm({
                             <Textarea
                                 id="notes"
                                 value={data.notes}
-                                onChange={(e) => setData('notes', e.target.value)}
+                                onChange={(e) =>
+                                    setData('notes', e.target.value)
+                                }
                                 rows={3}
                                 placeholder="Opsional"
                             />

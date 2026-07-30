@@ -15,9 +15,7 @@ export function StatusBadge({
     label: string;
     active: boolean;
 }) {
-    return (
-        <Badge variant={active ? 'default' : 'secondary'}>{label}</Badge>
-    );
+    return <Badge variant={active ? 'default' : 'secondary'}>{label}</Badge>;
 }
 
 export function ColorBadge({ label, color }: { label: string; color: string }) {

@@ -99,7 +99,7 @@ export function CashflowCalendar({ calendar }: { calendar: CalendarData }) {
                             <div
                                 key={cell.date}
                                 className={cn(
-                                    'flex min-h-20 flex-col gap-1 border-b border-r p-1.5 last:border-r-0',
+                                    'flex min-h-20 flex-col gap-1 border-r border-b p-1.5 last:border-r-0',
                                     !cell.in_month && 'bg-muted/30',
                                     cell.is_weekend &&
                                         cell.in_month &&
@@ -170,7 +170,7 @@ function CategoryList({
 }) {
     return (
         <div className="flex flex-col gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 {title}
             </p>
             {rows.length === 0 ? (

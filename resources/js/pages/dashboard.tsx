@@ -9,17 +9,8 @@ import {
     Wallet,
 } from 'lucide-react';
 import { ColorBadge } from '@/components/master/status-badge';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import {
-    formatDate,
-    formatRupiah,
-    formatRupiahShort,
-} from '@/lib/format';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatDate, formatRupiah, formatRupiahShort } from '@/lib/format';
 import { dashboard } from '@/routes';
 import invoices from '@/routes/invoices';
 
@@ -279,7 +270,8 @@ export default function Dashboard() {
                                             </span>
                                             <ModalLink
                                                 href={
-                                                    invoices.show(invoice.id).url
+                                                    invoices.show(invoice.id)
+                                                        .url
                                                 }
                                                 className="text-sm font-medium text-primary hover:underline"
                                             >

@@ -41,7 +41,10 @@ export default function PenyewaIndex() {
                     description="Kelola data penyewa beserta identitas dan kontaknya."
                     action={
                         canManage
-                            ? { label: 'Tambah Penyewa', href: penyewa.create() }
+                            ? {
+                                  label: 'Tambah Penyewa',
+                                  href: penyewa.create(),
+                              }
                             : undefined
                     }
                 />

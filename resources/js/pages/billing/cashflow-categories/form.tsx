@@ -66,7 +66,9 @@ export default function CashflowCategoryForm({
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 autoFocus
                                 placeholder="mis. Listrik, Gaji, Laundry"
                             />
@@ -77,7 +79,9 @@ export default function CashflowCategoryForm({
                             <Label htmlFor="type">Tipe</Label>
                             <Select
                                 value={data.type}
-                                onValueChange={(value) => setData('type', value)}
+                                onValueChange={(value) =>
+                                    setData('type', value)
+                                }
                             >
                                 <SelectTrigger id="type">
                                     <SelectValue />

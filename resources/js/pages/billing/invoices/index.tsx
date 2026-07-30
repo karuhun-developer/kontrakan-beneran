@@ -71,11 +71,10 @@ export default function InvoicesIndex() {
     } = usePage<PageProps>().props;
 
     const applyStatus = (status: string | null) => {
-        router.get(
-            invoices.index().url,
-            status ? { status } : {},
-            { preserveScroll: true, preserveState: true },
-        );
+        router.get(invoices.index().url, status ? { status } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+        });
     };
 
     return (
@@ -192,7 +191,8 @@ export default function InvoicesIndex() {
                                         <TableCell>
                                             <ModalLink
                                                 href={
-                                                    invoices.show(invoice.id).url
+                                                    invoices.show(invoice.id)
+                                                        .url
                                                 }
                                                 className={buttonVariants({
                                                     variant: 'ghost',

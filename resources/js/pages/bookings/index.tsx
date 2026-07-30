@@ -108,7 +108,9 @@ export default function BookingsIndex() {
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {formatDate(booking.end_date)}
+                                                    {formatDate(
+                                                        booking.end_date,
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
                                                     {formatRupiah(
@@ -134,7 +136,8 @@ export default function BookingsIndex() {
                                                         }
                                                         className={buttonVariants(
                                                             {
-                                                                variant: 'ghost',
+                                                                variant:
+                                                                    'ghost',
                                                                 size: 'icon',
                                                             },
                                                         )}

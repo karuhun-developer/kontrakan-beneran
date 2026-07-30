@@ -14,10 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import cashflows from '@/routes/cashflows';
-import type {
-    CashflowCategoryOption,
-    SelectOption,
-} from '@/types/master';
+import type { CashflowCategoryOption, SelectOption } from '@/types/master';
 
 type Cashflow = {
     id: number;
@@ -48,8 +45,8 @@ export default function CashflowForm({
 }: PageProps) {
     const isEdit = Boolean(cashflow);
 
-    const { data, setData, post, put, processing, errors, transform } =
-        useForm({
+    const { data, setData, post, put, processing, errors, transform } = useForm(
+        {
             type: cashflow?.type ?? String(typeOptions[0]?.value ?? 'expense'),
             amount: cashflow ? String(cashflow.amount) : '',
             description: cashflow?.description ?? '',
@@ -58,7 +55,8 @@ export default function CashflowForm({
                 ? String(cashflow.cashflow_category_id)
                 : NO_CATEGORY,
             notes: cashflow?.notes ?? '',
-        });
+        },
+    );
 
     transform((payload) => ({
         ...payload,

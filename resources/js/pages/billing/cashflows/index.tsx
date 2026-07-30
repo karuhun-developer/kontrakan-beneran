@@ -163,10 +163,7 @@ export default function CashflowsIndex() {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent
-                        value="table"
-                        className="flex flex-col gap-6"
-                    >
+                    <TabsContent value="table" className="flex flex-col gap-6">
                         <div className="flex flex-wrap items-center gap-2">
                             <Button
                                 type="button"
@@ -225,7 +222,7 @@ export default function CashflowsIndex() {
                                         )}
                                         {data.data.map((cashflow) => (
                                             <TableRow key={cashflow.id}>
-                                                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                                                <TableCell className="text-sm whitespace-nowrap text-muted-foreground">
                                                     {formatDate(
                                                         cashflow.occurred_on,
                                                     )}

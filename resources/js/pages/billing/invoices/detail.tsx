@@ -41,10 +41,14 @@ function TotalRow({
 }) {
     return (
         <div className="flex items-center justify-between text-sm">
-            <span className={strong ? 'font-semibold' : 'text-muted-foreground'}>
+            <span
+                className={strong ? 'font-semibold' : 'text-muted-foreground'}
+            >
                 {label}
             </span>
-            <span className={strong ? 'text-base font-semibold' : 'font-medium'}>
+            <span
+                className={strong ? 'text-base font-semibold' : 'font-medium'}
+            >
                 {value}
             </span>
         </div>
@@ -105,7 +109,7 @@ export default function InvoiceDetailModal({
                         />
                     </div>
 
-                    <div className="rounded-lg border divide-y px-4">
+                    <div className="divide-y rounded-lg border px-4">
                         <InfoRow
                             label="Periode"
                             value={`${formatDate(invoice.period_start)} – ${formatDate(invoice.period_end)}`}
@@ -125,7 +129,7 @@ export default function InvoiceDetailModal({
                     {/* Line items */}
                     <div className="space-y-2">
                         <p className="text-sm font-medium">Rincian</p>
-                        <div className="rounded-lg border divide-y">
+                        <div className="divide-y rounded-lg border">
                             {invoice.items.map((item) => (
                                 <div
                                     key={item.id}
@@ -142,7 +146,7 @@ export default function InvoiceDetailModal({
                                                 : ''}
                                         </p>
                                     </div>
-                                    <span className="whitespace-nowrap font-medium">
+                                    <span className="font-medium whitespace-nowrap">
                                         {formatRupiah(item.amount)}
                                     </span>
                                 </div>
@@ -250,7 +254,10 @@ export default function InvoiceDetailModal({
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="method">Metode</Label>
-                                <Select value={method} onValueChange={setMethod}>
+                                <Select
+                                    value={method}
+                                    onValueChange={setMethod}
+                                >
                                     <SelectTrigger id="method">
                                         <SelectValue />
                                     </SelectTrigger>
@@ -281,7 +288,9 @@ export default function InvoiceDetailModal({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="notes">Catatan (opsional)</Label>
+                                <Label htmlFor="notes">
+                                    Catatan (opsional)
+                                </Label>
                                 <Textarea
                                     id="notes"
                                     rows={2}
@@ -352,7 +361,9 @@ export default function InvoiceDetailModal({
                                                     : ''}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {formatDateTime(payment.paid_at)}
+                                                {formatDateTime(
+                                                    payment.paid_at,
+                                                )}
                                                 {payment.recorded_by
                                                     ? ` · ${payment.recorded_by}`
                                                     : ''}
@@ -417,11 +428,7 @@ export default function InvoiceDetailModal({
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={close}
-                        >
+                        <Button type="button" variant="outline" onClick={close}>
                             Tutup
                         </Button>
                     </div>

@@ -95,7 +95,10 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     {legend.map((item) => (
-                        <span key={item.color} className="flex items-center gap-1.5">
+                        <span
+                            key={item.color}
+                            className="flex items-center gap-1.5"
+                        >
                             <span
                                 className={cn(
                                     'size-3 rounded-sm',
@@ -120,7 +123,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                             style={{ gridTemplateColumns, minWidth }}
                         >
                             {/* Header */}
-                            <div className="sticky left-0 z-20 flex items-center border-b border-r bg-muted/50 px-3 py-2 text-xs font-medium text-muted-foreground">
+                            <div className="sticky left-0 z-20 flex items-center border-r border-b bg-muted/50 px-3 py-2 text-xs font-medium text-muted-foreground">
                                 Kamar
                             </div>
                             {calendar.days.map((day, index) => (
@@ -136,7 +139,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                                     <span className="text-sm leading-none">
                                         {day.day}
                                     </span>
-                                    <span className="text-[10px] uppercase leading-none text-muted-foreground">
+                                    <span className="text-[10px] leading-none text-muted-foreground uppercase">
                                         {day.weekday}
                                     </span>
                                 </div>
@@ -150,7 +153,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                                     return (
                                         <div
                                             key={row.key}
-                                            className="sticky left-0 z-30 flex items-center border-t bg-muted/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                                            className="sticky left-0 z-30 flex items-center border-t bg-muted/70 px-3 py-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
                                             style={{
                                                 gridColumn: `1 / span ${calendar.days_in_month + 1}`,
                                                 gridRow,
@@ -169,7 +172,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                                             className="sticky left-0 z-20 flex flex-col justify-center border-t border-r bg-card px-3 py-2 pl-5"
                                             style={{ gridColumn: 1, gridRow }}
                                         >
-                                            <span className="font-medium leading-tight">
+                                            <span className="leading-tight font-medium">
                                                 {room.number}
                                             </span>
                                             {room.name && (
@@ -184,8 +187,10 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                                                 key={dayIndex}
                                                 className={cn(
                                                     'h-12 border-t border-l border-border/50',
-                                                    day.is_weekend && 'bg-muted/30',
-                                                    day.is_today && 'bg-primary/5',
+                                                    day.is_weekend &&
+                                                        'bg-muted/30',
+                                                    day.is_today &&
+                                                        'bg-primary/5',
                                                 )}
                                                 style={{
                                                     gridColumn: dayIndex + 2,
@@ -246,7 +251,9 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
                                                                 bar.end_date,
                                                             )}
                                                         </p>
-                                                        <p>{bar.status_label}</p>
+                                                        <p>
+                                                            {bar.status_label}
+                                                        </p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </div>

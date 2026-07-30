@@ -1,7 +1,8 @@
 import { useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,8 @@ type ManagedUser = {
     name: string;
     email: string;
     role: string | null;
+    role_label: string | null;
+    is_owner: boolean;
     branches: number[];
 };
 
@@ -30,8 +33,13 @@ type PageProps = {
     branchOptions: BranchSelectOption[];
 };
 
-export default function UserForm({ user, roleOptions, branchOptions }: PageProps) {
+export default function UserForm({
+    user,
+    roleOptions,
+    branchOptions,
+}: PageProps) {
     const isEdit = Boolean(user);
+    const isOwner = Boolean(user?.is_owner);
 
     const { data, setData, post, put, processing, errors } = useForm({
         name: user?.name ?? '',
@@ -73,7 +81,9 @@ export default function UserForm({ user, roleOptions, branchOptions }: PageProps
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 autoFocus
                             />
                             <InputError message={errors.name} />
@@ -115,55 +125,72 @@ export default function UserForm({ user, roleOptions, branchOptions }: PageProps
 
                         <div className="grid gap-2">
                             <Label htmlFor="role">Peran</Label>
-                            <Select
-                                value={data.role}
-                                onValueChange={(value) => setData('role', value)}
-                            >
-                                <SelectTrigger id="role">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {roleOptions.map((option) => (
-                                        <SelectItem
-                                            key={option.value}
-                                            value={option.value}
-                                        >
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors.role} />
+                            {isOwner ? (
+                                <div className="flex items-center gap-2">
+                                    <Badge>{user?.role_label ?? 'Owner'}</Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                        Peran owner tidak dapat diubah.
+                                    </span>
+                                </div>
+                            ) : (
+                                <>
+                                    <Select
+                                        value={data.role}
+                                        onValueChange={(value) =>
+                                            setData('role', value)
+                                        }
+                                    >
+                                        <SelectTrigger id="role">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roleOptions.map((option) => (
+                                                <SelectItem
+                                                    key={option.value}
+                                                    value={option.value}
+                                                >
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.role} />
+                                </>
+                            )}
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label>Cabang</Label>
-                            {branchOptions.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    Belum ada cabang.
-                                </p>
-                            ) : (
-                                <div className="space-y-2 rounded-lg border p-3">
-                                    {branchOptions.map((option) => (
-                                        <label
-                                            key={option.value}
-                                            className="flex items-center gap-2 text-sm"
-                                        >
-                                            <Checkbox
-                                                checked={data.branches.includes(
-                                                    option.value,
-                                                )}
-                                                onCheckedChange={() =>
-                                                    toggleBranch(option.value)
-                                                }
-                                            />
-                                            {option.label}
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
-                            <InputError message={errors.branches} />
-                        </div>
+                        {!isOwner && (
+                            <div className="grid gap-2">
+                                <Label>Cabang</Label>
+                                {branchOptions.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        Belum ada cabang.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-2 rounded-lg border p-3">
+                                        {branchOptions.map((option) => (
+                                            <label
+                                                key={option.value}
+                                                className="flex items-center gap-2 text-sm"
+                                            >
+                                                <Checkbox
+                                                    checked={data.branches.includes(
+                                                        option.value,
+                                                    )}
+                                                    onCheckedChange={() =>
+                                                        toggleBranch(
+                                                            option.value,
+                                                        )
+                                                    }
+                                                />
+                                                {option.label}
+                                            </label>
+                                        ))}
+                                    </div>
+                                )}
+                                <InputError message={errors.branches} />
+                            </div>
+                        )}
 
                         <div className="flex items-center gap-3 pt-2">
                             <Button type="submit" disabled={processing}>

@@ -33,10 +33,14 @@ function TotalRow({
 }) {
     return (
         <div className="flex items-center justify-between text-sm">
-            <span className={strong ? 'font-semibold' : 'text-muted-foreground'}>
+            <span
+                className={strong ? 'font-semibold' : 'text-muted-foreground'}
+            >
                 {label}
             </span>
-            <span className={strong ? 'text-base font-semibold' : 'font-medium'}>
+            <span
+                className={strong ? 'text-base font-semibold' : 'font-medium'}
+            >
                 {value}
             </span>
         </div>
@@ -85,7 +89,10 @@ export default function PortalInvoiceDetailModal({
     };
 
     return (
-        <ModalForm title={invoice.number} description={invoice.room ?? undefined}>
+        <ModalForm
+            title={invoice.number}
+            description={invoice.room ?? undefined}
+        >
             {(close) => (
                 <div className="space-y-6">
                     <div className="flex items-start justify-between">
@@ -248,7 +255,9 @@ export default function PortalInvoiceDetailModal({
                                                     max={invoice.outstanding}
                                                     value={amount}
                                                     onChange={(e) =>
-                                                        setAmount(e.target.value)
+                                                        setAmount(
+                                                            e.target.value,
+                                                        )
                                                     }
                                                 />
                                                 <InputError
@@ -265,7 +274,8 @@ export default function PortalInvoiceDetailModal({
                                                     accept="image/*"
                                                     onChange={(e) =>
                                                         setProof(
-                                                            e.target.files?.[0] ??
+                                                            e.target
+                                                                .files?.[0] ??
                                                                 null,
                                                         )
                                                     }
@@ -352,7 +362,9 @@ export default function PortalInvoiceDetailModal({
                                                 {payment.method_label}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {formatDateTime(payment.paid_at)}
+                                                {formatDateTime(
+                                                    payment.paid_at,
+                                                )}
                                             </p>
                                             {payment.proof_url && (
                                                 <PaymentProof

@@ -119,4 +119,41 @@ class BranchManagementTest extends TestCase
 
         $this->get(route('management.branches.edit', $otherBranch))->assertNotFound();
     }
+
+    public function test_owner_without_a_branch_is_redirected_to_branch_setup()
+    {
+        $owner = $this->ownerWithoutBranch();
+        $this->actingAs($owner);
+
+        $this->get(route('dashboard'))->assertRedirect(route('management.branches.index'));
+    }
+
+    public function test_owner_without_a_branch_can_still_open_and_create_branches()
+    {
+        $owner = $this->ownerWithoutBranch();
+        $this->actingAs($owner);
+
+        // The setup page itself stays reachable (no redirect loop)...
+        $this->get(route('management.branches.index'))->assertOk();
+
+        // ...and the first branch can be created without an active branch.
+        $this->post(route('management.branches.store'), [
+            'name' => 'Cabang Pertama',
+            'status' => 'active',
+        ])->assertRedirect(route('management.branches.index'));
+
+        $this->assertDatabaseHas('branches', [
+            'tenant_id' => $owner->tenant_id,
+            'name' => 'Cabang Pertama',
+        ]);
+    }
+
+    private function ownerWithoutBranch(): User
+    {
+        $tenant = Tenant::factory()->create();
+        $owner = User::factory()->create(['tenant_id' => $tenant->id]);
+        $owner->assignRole(UserRole::Owner->value);
+
+        return $owner;
+    }
 }
