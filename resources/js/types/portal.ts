@@ -135,6 +135,12 @@ export type TransferInstructions = {
     account_holder: string;
 };
 
+export type GatewayMethod = {
+    code: string;
+    label: string;
+    type: string;
+};
+
 export type PortalInvoiceDetail = {
     id: number;
     number: string;

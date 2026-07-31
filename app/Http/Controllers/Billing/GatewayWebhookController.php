@@ -18,7 +18,7 @@ class GatewayWebhookController extends Controller
     public function handle(Request $request, PaymentGateway $gateway, SettleGatewayPayment $action): JsonResponse
     {
         try {
-            $notification = $gateway->parseNotification($request->all());
+            $notification = $gateway->parseNotification($request);
         } catch (InvalidGatewayNotificationException) {
             return response()->json(['message' => 'Invalid signature.'], 403);
         }

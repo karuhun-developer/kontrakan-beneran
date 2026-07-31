@@ -45,6 +45,14 @@ return [
             'is_production' => (bool) env('MIDTRANS_IS_PRODUCTION', false),
         ],
 
+        'paywuz' => [
+            'base_url' => env('PAYWUZ_BASE_URL', 'https://api.paywuz.id/v1'),
+            'key' => env('PAYWUZ_KEY', ''),
+            'webhook_secret' => env('PAYWUZ_WEBHOOK_SECRET', ''),
+            'expiry_minutes' => (int) env('PAYWUZ_EXPIRY_MINUTES', 60),
+            'methods_cache_ttl' => (int) env('PAYWUZ_METHODS_CACHE_TTL', 3600),
+        ],
+
     ],
 
 ];

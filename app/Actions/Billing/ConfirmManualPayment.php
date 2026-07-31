@@ -28,6 +28,12 @@ class ConfirmManualPayment
             ]);
         }
 
+        if ($payment->reference !== null) {
+            throw ValidationException::withMessages([
+                'payment' => 'Pembayaran ini diselesaikan otomatis oleh gateway.',
+            ]);
+        }
+
         $invoice = $payment->invoice;
 
         if ($invoice->status === InvoiceStatus::Void) {
