@@ -32,7 +32,7 @@ export function ModalForm({ title, description, children }: ModalFormProps) {
             {({ close }: { close: () => void }) => (
                 <ModalContainerContext.Provider value={panel}>
                     <div ref={setPanel} className="flex min-h-screen flex-col">
-                        <header className="flex items-start justify-between gap-4 border-b px-8 py-6">
+                        <header className="flex items-start justify-between gap-4 border-b px-5 py-5 sm:px-8 sm:py-6">
                             <div className="space-y-1">
                                 <h2 className="text-lg font-semibold tracking-tight">
                                     {title}
@@ -54,7 +54,7 @@ export function ModalForm({ title, description, children }: ModalFormProps) {
                                 <X className="size-5" />
                             </Button>
                         </header>
-                        <div className="flex-1 overflow-y-auto px-8 py-6">
+                        <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-8 sm:py-6">
                             {children(close)}
                         </div>
                     </div>

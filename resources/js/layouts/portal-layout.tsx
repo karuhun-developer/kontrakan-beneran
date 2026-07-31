@@ -95,7 +95,7 @@ export default function PortalLayout({
             </header>
 
             <nav className="border-b border-sidebar-border/70">
-                <div className="mx-auto flex w-full items-center gap-1 px-4 md:max-w-5xl">
+                <div className="mx-auto flex w-full [scrollbar-width:none] items-center gap-1 overflow-x-auto px-4 md:max-w-5xl [&::-webkit-scrollbar]:hidden">
                     {navItems.map((item) => {
                         const active =
                             item.href === '/portal'
@@ -107,7 +107,7 @@ export default function PortalLayout({
                                 key={item.label}
                                 href={item.href}
                                 className={cn(
-                                    'flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium transition-colors',
+                                    'flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors',
                                     active
                                         ? 'border-primary text-foreground'
                                         : 'border-transparent text-muted-foreground hover:text-foreground',
