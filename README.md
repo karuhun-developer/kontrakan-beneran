@@ -18,8 +18,6 @@ KostPro **gratis dan open source** ([lisensi MIT](./LICENSE)) — bebas kamu sel
 - ❤️ **Dukung** — kalau proyek ini membantu, kamu bisa traktir lewat Saweria (tautan di landing page).
 - 🛟 **Dibantu pasang** — males ribet install atau butuh hosting? Kami bisa setup-kan. Hubungi kontak di landing page.
 
-> Tautan GitHub, Saweria, dan kontak diatur lewat konstanta di `resources/js/pages/welcome.tsx`.
-
 ---
 
 ## Tech Stack
@@ -166,15 +164,46 @@ npm run build                 # build produksi Vite
 
 ## Konfigurasi Penting (`.env`)
 
-| Variabel | Fungsi |
-|---|---|
-| `PAYMENT_GATEWAY` | Driver pembayaran online: `midtrans` atau `null` (lokal/test) |
-| `MIDTRANS_SERVER_KEY` / `MIDTRANS_CLIENT_KEY` | Kredensial Midtrans (jika dipakai) |
-| `BILLING_LATE_FEE_ENABLED` / `_TYPE` / `_VALUE` | Kebijakan denda telat |
-| `BILLING_INVOICE_LEAD_DAYS` | Jeda pembuatan tagihan sebelum periode |
-| `PORTAL_DEFAULT_PASSWORD` | Password default akun penyewa baru |
+### Pembayaran (gateway online)
+
+| Variabel | Fungsi | Default |
+|---|---|---|
+| `PAYMENT_GATEWAY` | Driver pembayaran online: `midtrans`, `paywuz`, atau `null` (lokal/test) | `null` |
+| `MIDTRANS_SERVER_KEY` / `MIDTRANS_CLIENT_KEY` | Kredensial Midtrans (jika driver `midtrans`) | – |
+| `MIDTRANS_IS_PRODUCTION` | `true` = mode produksi, `false` = sandbox | `false` |
+| `PAYWUZ_BASE_URL` | Endpoint API Paywuz (jika driver `paywuz`) | – |
+| `PAYWUZ_KEY` | API key Paywuz | – |
+| `PAYWUZ_WEBHOOK_SECRET` | Secret untuk verifikasi tanda tangan webhook Paywuz | – |
 
 Ganti gateway pembayaran cukup ubah `PAYMENT_GATEWAY` — domain hanya bicara ke kontrak `PaymentGateway`, jadi tidak terkunci ke satu vendor.
+
+### Penagihan & Portal
+
+| Variabel | Fungsi | Default |
+|---|---|---|
+| `BILLING_INVOICE_LEAD_DAYS` | Jeda (hari) pembuatan tagihan sebelum periode | `7` |
+| `BILLING_LATE_FEE_ENABLED` | Aktifkan denda telat otomatis | `false` |
+| `BILLING_LATE_FEE_TYPE` | Jenis denda: `percentage` atau `fixed` | `percentage` |
+| `BILLING_LATE_FEE_VALUE` | Nilai denda (persen atau nominal, sesuai `_TYPE`) | `0` |
+| `PORTAL_DEFAULT_PASSWORD` | Password default akun penyewa baru saat di-provision staff | `kostpro123` |
+
+### Email / SMTP (notifikasi jatuh tempo)
+
+| Variabel | Fungsi | Default |
+|---|---|---|
+| `MAIL_MAILER` | Driver mail: `smtp`, `log`, dll | `log` |
+| `MAIL_HOST` / `MAIL_PORT` | Host & port SMTP | – |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | Kredensial SMTP | – |
+| `MAIL_SCHEME` | Enkripsi koneksi (mis. `smtps`/`tls`) | – |
+| `MAIL_FROM_ADDRESS` / `MAIL_FROM_NAME` | Alamat & nama pengirim | – |
+
+### Demo
+
+| Variabel | Fungsi | Default |
+|---|---|---|
+| `KOSTPRO_DEMO` | Tampilkan kredensial akun demo di halaman login. Set `false` di produksi | `true` |
+
+> Konfigurasi lain (`APP_*`, `DB_*`, `SESSION_*`, `QUEUE_*`, `REDIS_*`, `AWS_*`, dll) mengikuti standar Laravel — lihat `.env.example`.
 
 ---
 
@@ -195,7 +224,3 @@ resources/js/
 database/
 ├── migrations/  factories/  seeders/   # RolePermissionSeeder + DemoSeeder
 ```
-
----
-
-Dibangun sebagai penerus `kontrakan-beneran` (Laravel + Livewire) dengan stack modern dan cakupan fitur lebih lengkap.

@@ -26,10 +26,10 @@ import {
 } from '@/components/ui/card';
 import { dashboard, login, register } from '@/routes';
 
-// Diisi sendiri: tautan repository, halaman donasi Saweria, dan kontak (WA/email).
+// Tautan repository, halaman donasi Saweria, dan kontak (Telegram).
 const GITHUB_URL = 'https://github.com/karuhun-developer/kontrakan-beneran';
-const SAWERIA_URL = 'https://saweria.co/';
-const CONTACT_URL = 'https://wa.me/';
+const SAWERIA_URL = 'https://saweria.co/warukunai';
+const CONTACT_URL = 'https://t.me/bayurifkialgh';
 
 const FEATURES = [
     {
@@ -94,25 +94,25 @@ const GALLERY = [
         title: 'Dashboard Operasional',
         description:
             'Ringkasan hunian, tagihan, dan arus kas cabang dalam satu layar.',
-        image: '/images/demo/dashboard.png',
+        image: '/demo/dashboard.png',
     },
     {
         title: 'Front Desk & Booking',
         description:
             'Timeline kamar dengan status check-in/out dan pengaman anti double-booking.',
-        image: '/images/demo/booking.png',
+        image: '/demo/booking.png',
     },
     {
         title: 'Tagihan & Pembayaran',
         description:
             'Invoice bulanan otomatis dengan pembayaran QRIS, Virtual Account, atau transfer manual.',
-        image: '/images/demo/invoice.png',
+        image: '/demo/tagihan.png',
     },
     {
         title: 'Portal Penyewa',
         description:
             'Penyewa melihat tagihan, membayar online, dan memantau deposit secara mandiri.',
-        image: '/images/demo/portal.png',
+        image: '/demo/portal-penyewa.png',
     },
 ];
 
