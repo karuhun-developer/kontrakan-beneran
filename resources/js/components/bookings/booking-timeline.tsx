@@ -9,8 +9,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import bookings from '@/routes/bookings';
 import type { BookingCalendar, TimelineRoom } from '@/types/master';
 
@@ -52,6 +52,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
 
     const rows: Row[] = [];
     let cursor = 2;
+
     for (const group of calendar.groups) {
         rows.push({
             kind: 'group',
@@ -59,6 +60,7 @@ export function BookingTimeline({ calendar }: { calendar: BookingCalendar }) {
             name: group.name,
             gridRow: cursor++,
         });
+
         for (const room of group.rooms) {
             rows.push({
                 kind: 'room',

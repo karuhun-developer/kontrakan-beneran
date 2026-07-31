@@ -1,6 +1,7 @@
 import { Modal } from '@inertiaui/modal-react';
 import { X } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ModalContainerContext } from '@/lib/modal-container';
 

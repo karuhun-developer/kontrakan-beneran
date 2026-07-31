@@ -30,6 +30,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useCan } from '@/hooks/use-can';
+import { dashboard } from '@/routes';
 import bookings from '@/routes/bookings';
 import cashflows from '@/routes/cashflows';
 import deposits from '@/routes/deposits';
@@ -44,7 +45,6 @@ import penyewa from '@/routes/penyewa';
 import reports from '@/routes/reports';
 import roomTypes from '@/routes/room-types';
 import rooms from '@/routes/rooms';
-import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [

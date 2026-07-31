@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { UserPlus, X } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import type { FormEvent } from 'react';
+import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
 import { Button } from '@/components/ui/button';
@@ -15,9 +16,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
 import { formatRupiah } from '@/lib/format';
 import { HttpError, postJson } from '@/lib/http';
+import { cn } from '@/lib/utils';
 import bookings from '@/routes/bookings';
 import penyewa from '@/routes/penyewa';
 import type { SelectOption } from '@/types';
@@ -75,6 +76,7 @@ export default function BookingForm({
     const saveQuickPenyewa = async () => {
         setSavingPenyewa(true);
         setQuickErrors({});
+
         try {
             const created = await postJson<{ id: number; name: string }>(
                 penyewa.quickStore().url,
@@ -116,6 +118,7 @@ export default function BookingForm({
 
     const switchMode = (next: Mode) => {
         setMode(next);
+
         if (next === 'walkin') {
             // Walk-in = check-in on the spot: start today, force checked-in.
             setData((prev) => ({

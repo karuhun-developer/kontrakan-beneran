@@ -24,8 +24,8 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCan } from '@/hooks/use-can';
-import { cn } from '@/lib/utils';
 import { formatDate, formatRupiah } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import cashflowCategories from '@/routes/cashflow-categories';
 import cashflows from '@/routes/cashflows';
 import type {

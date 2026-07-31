@@ -1,8 +1,8 @@
 import { ModalForm } from '@/components/master/modal-form';
 import { ColorBadge } from '@/components/master/status-badge';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { formatDate, formatRupiah } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import type { PortalDepositDetail } from '@/types/portal';
 
 function InfoRow({ label, value }: { label: string; value: string }) {
