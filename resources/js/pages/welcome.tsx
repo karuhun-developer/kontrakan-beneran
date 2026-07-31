@@ -14,7 +14,9 @@ import {
     Users,
     Wallet,
     WashingMachine,
+    ZoomIn,
 } from 'lucide-react';
+import { useState } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +26,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { dashboard, login, register } from '@/routes';
 
 // Tautan repository, halaman donasi Saweria, dan kontak (Telegram).
@@ -118,6 +121,9 @@ const GALLERY = [
 
 export default function Welcome() {
     const { auth, name } = usePage().props;
+    const [preview, setPreview] = useState<(typeof GALLERY)[number] | null>(
+        null,
+    );
 
     const primaryCta = auth.user ? (
         <Button asChild size="lg">
@@ -264,14 +270,22 @@ export default function Welcome() {
                                 key={item.title}
                                 className="overflow-hidden border-border/60 pt-0"
                             >
-                                <div className="aspect-video w-full overflow-hidden bg-muted">
+                                <button
+                                    type="button"
+                                    onClick={() => setPreview(item)}
+                                    aria-label={`Lihat detail ${item.title}`}
+                                    className="group/img relative aspect-video w-full cursor-zoom-in overflow-hidden bg-muted"
+                                >
                                     <img
                                         src={item.image}
                                         alt={item.title}
                                         loading="lazy"
-                                        className="h-full w-full object-cover"
+                                        className="h-full w-full object-cover transition-transform duration-300 group-hover/img:scale-105"
                                     />
-                                </div>
+                                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-colors duration-200 group-hover/img:bg-black/30 group-hover/img:opacity-100">
+                                        <ZoomIn className="size-8 text-white drop-shadow" />
+                                    </span>
+                                </button>
                                 <CardHeader>
                                     <CardTitle className="text-lg">
                                         {item.title}
@@ -283,6 +297,24 @@ export default function Welcome() {
                             </Card>
                         ))}
                     </div>
+
+                    <Dialog
+                        open={preview !== null}
+                        onOpenChange={(open) => !open && setPreview(null)}
+                    >
+                        <DialogContent className="w-full max-w-5xl border-0 bg-transparent p-0 shadow-none sm:max-w-5xl">
+                            <DialogTitle className="sr-only">
+                                {preview?.title}
+                            </DialogTitle>
+                            {preview && (
+                                <img
+                                    src={preview.image}
+                                    alt={preview.title}
+                                    className="max-h-[85vh] w-full rounded-lg object-contain"
+                                />
+                            )}
+                        </DialogContent>
+                    </Dialog>
                 </section>
 
                 {/* Open source & dukungan */}
