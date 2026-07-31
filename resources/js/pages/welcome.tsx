@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { dashboard, login, register } from '@/routes';
+import { dashboard as portalDashboard } from '@/routes/portal';
 
 // Tautan repository, halaman donasi Saweria, dan kontak (Telegram).
 const GITHUB_URL = 'https://github.com/karuhun-developer/kontrakan-beneran';
@@ -125,9 +126,13 @@ export default function Welcome() {
         null,
     );
 
+    // Penyewa masuk ke portal-nya sendiri; peran staf ke dashboard operasional.
+    const homeHref =
+        auth.user?.role === 'penyewa' ? portalDashboard() : dashboard();
+
     const primaryCta = auth.user ? (
         <Button asChild size="lg">
-            <Link href={dashboard()}>Buka Dashboard</Link>
+            <Link href={homeHref}>Buka Dashboard</Link>
         </Button>
     ) : (
         <Button asChild size="lg">
@@ -172,7 +177,7 @@ export default function Welcome() {
                             </Button>
                             {auth.user ? (
                                 <Button asChild>
-                                    <Link href={dashboard()}>Dashboard</Link>
+                                    <Link href={homeHref}>Dashboard</Link>
                                 </Button>
                             ) : (
                                 <Button asChild>
