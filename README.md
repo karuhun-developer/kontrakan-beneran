@@ -54,6 +54,25 @@ Rincian per fase pengembangan ada di [CHANGELOG.md](./CHANGELOG.md) dan roadmap 
 
 ---
 
+## Tampilan
+
+<table>
+  <tr>
+    <td width="50%"><img src="public/demo/dashboard.png" alt="Dashboard operasional" /><br/><sub><b>Dashboard</b> — ringkasan hunian, tagihan, dan arus kas per cabang.</sub></td>
+    <td width="50%"><img src="public/demo/booking.png" alt="Front desk & booking" /><br/><sub><b>Front Desk & Booking</b> — timeline kamar dengan status check-in/out.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="public/demo/booking-create-1.png" alt="Buat booking" /><br/><sub><b>Buat Booking</b> — pilih kamar & rentang tanggal, anti double-booking.</sub></td>
+    <td width="50%"><img src="public/demo/booking-create-2.png" alt="Buat booking lanjutan" /><br/><sub><b>Buat Booking</b> — konfirmasi penyewa & rincian biaya.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="public/demo/tagihan.png" alt="Tagihan & pembayaran" /><br/><sub><b>Tagihan & Pembayaran</b> — invoice bulanan, QRIS/VA/transfer manual.</sub></td>
+    <td width="50%"><img src="public/demo/portal-penyewa.png" alt="Portal penyewa" /><br/><sub><b>Portal Penyewa</b> — penyewa lihat tagihan, bayar, & pantau deposit.</sub></td>
+  </tr>
+</table>
+
+---
+
 ## Persyaratan
 
 - PHP **8.4** + ekstensi umum Laravel
