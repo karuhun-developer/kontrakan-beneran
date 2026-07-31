@@ -3,12 +3,29 @@
 namespace Database\Seeders;
 
 use App\Enums\BookingStatus;
+use App\Enums\CashflowType;
 use App\Enums\CommonStatus;
+use App\Enums\DepositStatus;
+use App\Enums\DepositTransactionType;
+use App\Enums\InvoiceItemType;
+use App\Enums\InvoiceStatus;
+use App\Enums\LaundryPaymentSource;
+use App\Enums\LaundryStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Enums\RoomStatus;
 use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\Branch;
+use App\Models\Cashflow;
+use App\Models\CashflowCategory;
+use App\Models\Deposit;
+use App\Models\DepositTransaction;
 use App\Models\Facility;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\LaundryOrder;
+use App\Models\Payment;
 use App\Models\Penyewa;
 use App\Models\Room;
 use App\Models\RoomType;
@@ -113,7 +130,7 @@ class DemoSeeder extends Seeder
         );
         $penyewaUser->syncRoles(UserRole::Penyewa->value);
 
-        Penyewa::firstOrCreate(
+        $penyewaDemo = Penyewa::firstOrCreate(
             ['tenant_id' => $tenant->id, 'email' => 'penyewa@kostpro.test'],
             [
                 'branch_id' => $branchPusat->id,
@@ -131,6 +148,197 @@ class DemoSeeder extends Seeder
         $this->seedMasterData($branchSelatan);
 
         $this->seedBookings($branchPusat);
+
+        $this->seedFinancials($branchPusat, $penyewaDemo);
+    }
+
+    /**
+     * Seed financial records so the owner dashboard/reports are populated and
+     * the demo penyewa portal shows an active stay, an outstanding invoice, a
+     * held deposit, and a laundry order. Idempotent via deterministic keys.
+     */
+    private function seedFinancials(Branch $branch, Penyewa $penyewaDemo): void
+    {
+        $tenantId = $branch->tenant_id;
+
+        // Cashflow categories (income auto-filled from payments, expenses manual).
+        $incomeCategory = CashflowCategory::firstOrCreate(
+            ['tenant_id' => $tenantId, 'branch_id' => $branch->id, 'name' => 'Pembayaran Sewa'],
+            ['type' => CashflowType::Income, 'is_system' => true, 'status' => CommonStatus::Active],
+        );
+
+        $expenseCategory = CashflowCategory::firstOrCreate(
+            ['tenant_id' => $tenantId, 'branch_id' => $branch->id, 'name' => 'Operasional'],
+            ['type' => CashflowType::Expense, 'is_system' => false, 'status' => CommonStatus::Active],
+        );
+
+        // --- Demo penyewa: active stay + outstanding invoice + deposit + laundry ---
+        $room = Room::forBranch($branch->id)->where('number', '007')->first();
+
+        if ($room !== null) {
+            $stay = Booking::firstOrCreate(
+                ['branch_id' => $branch->id, 'room_id' => $room->id, 'penyewa_id' => $penyewaDemo->id],
+                [
+                    'tenant_id' => $tenantId,
+                    'start_date' => now()->subDays(20)->toDateString(),
+                    'end_date' => now()->addDays(40)->toDateString(),
+                    'monthly_price' => $room->effective_monthly_price,
+                    'status' => BookingStatus::CheckedIn,
+                    'checked_in_at' => now()->subDays(20),
+                ],
+            );
+
+            if ($stay->wasRecentlyCreated) {
+                $room->update(['room_status' => RoomStatus::Occupied]);
+            }
+        }
+
+        $rent = $room?->effective_monthly_price ?? 800_000;
+
+        $outstanding = Invoice::firstOrCreate(
+            ['tenant_id' => $tenantId, 'number' => 'INV-DEMO-PNY'],
+            [
+                'branch_id' => $branch->id,
+                'penyewa_id' => $penyewaDemo->id,
+                'period_start' => now()->startOfMonth()->toDateString(),
+                'period_end' => now()->endOfMonth()->toDateString(),
+                'due_date' => now()->addDays(5)->toDateString(),
+                'subtotal' => $rent,
+                'discount' => 0,
+                'fine' => 0,
+                'total' => $rent,
+                'status' => InvoiceStatus::Unpaid,
+            ],
+        );
+
+        if ($outstanding->wasRecentlyCreated) {
+            InvoiceItem::create([
+                'invoice_id' => $outstanding->id,
+                'type' => InvoiceItemType::Rent,
+                'description' => 'Sewa kamar '.($room?->number ?? '007'),
+                'quantity' => 1,
+                'unit_price' => $rent,
+                'amount' => $rent,
+            ]);
+        }
+
+        $deposit = Deposit::firstOrCreate(
+            ['tenant_id' => $tenantId, 'branch_id' => $branch->id, 'penyewa_id' => $penyewaDemo->id],
+            [
+                'amount' => 800_000,
+                'balance' => 800_000,
+                'status' => DepositStatus::Held,
+                'held_at' => now()->subDays(20)->toDateString(),
+            ],
+        );
+
+        if ($deposit->wasRecentlyCreated) {
+            DepositTransaction::create([
+                'tenant_id' => $tenantId,
+                'branch_id' => $branch->id,
+                'deposit_id' => $deposit->id,
+                'type' => DepositTransactionType::Hold,
+                'amount' => 800_000,
+                'reason' => 'Deposit awal',
+                'occurred_on' => now()->subDays(20)->toDateString(),
+            ]);
+        }
+
+        LaundryOrder::firstOrCreate(
+            ['tenant_id' => $tenantId, 'number' => 'LDR-DEMO-001'],
+            [
+                'branch_id' => $branch->id,
+                'penyewa_id' => $penyewaDemo->id,
+                'status' => LaundryStatus::Processing,
+                'payment_source' => LaundryPaymentSource::Invoice,
+                'weight' => 4,
+                'price' => 28_000,
+                'ordered_on' => now()->subDays(2)->toDateString(),
+            ],
+        );
+
+        // --- Owner-side history: paid + overdue invoices, payments, cashflow ---
+        $others = Penyewa::where('tenant_id', $tenantId)
+            ->where('branch_id', $branch->id)
+            ->whereKeyNot($penyewaDemo->id)
+            ->orderBy('id')
+            ->take(3)
+            ->get();
+
+        foreach ($others as $index => $penyewa) {
+            $paid = $index % 3 !== 2; // 2 paid, 1 overdue among the first three
+            $amount = 800_000 + ($index * 200_000);
+            $number = 'INV-DEMO-'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT);
+
+            $invoice = Invoice::firstOrCreate(
+                ['tenant_id' => $tenantId, 'number' => $number],
+                [
+                    'branch_id' => $branch->id,
+                    'penyewa_id' => $penyewa->id,
+                    'period_start' => now()->subMonth()->startOfMonth()->toDateString(),
+                    'period_end' => now()->subMonth()->endOfMonth()->toDateString(),
+                    'due_date' => now()->subDays($paid ? 20 : 10)->toDateString(),
+                    'subtotal' => $amount,
+                    'discount' => 0,
+                    'fine' => 0,
+                    'total' => $amount,
+                    'status' => $paid ? InvoiceStatus::Paid : InvoiceStatus::Overdue,
+                    'paid_at' => $paid ? now()->subDays(18) : null,
+                ],
+            );
+
+            if (! $invoice->wasRecentlyCreated) {
+                continue;
+            }
+
+            InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'type' => InvoiceItemType::Rent,
+                'description' => 'Sewa kamar bulan lalu',
+                'quantity' => 1,
+                'unit_price' => $amount,
+                'amount' => $amount,
+            ]);
+
+            if ($paid) {
+                Payment::create([
+                    'tenant_id' => $tenantId,
+                    'branch_id' => $branch->id,
+                    'invoice_id' => $invoice->id,
+                    'penyewa_id' => $penyewa->id,
+                    'amount' => $amount,
+                    'method' => PaymentMethod::Transfer,
+                    'status' => PaymentStatus::Completed,
+                    'paid_at' => now()->subDays(18),
+                ]);
+
+                Cashflow::create([
+                    'tenant_id' => $tenantId,
+                    'branch_id' => $branch->id,
+                    'cashflow_category_id' => $incomeCategory->id,
+                    'type' => CashflowType::Income,
+                    'amount' => $amount,
+                    'description' => 'Pembayaran sewa '.$number,
+                    'occurred_on' => now()->subDays(18)->toDateString(),
+                ]);
+            }
+        }
+
+        // A couple of operational expenses so the cashflow book is not one-sided.
+        foreach ([
+            ['Listrik & air cabang', 450_000, 12],
+            ['Perawatan kamar', 300_000, 6],
+        ] as $i => [$desc, $amount, $daysAgo]) {
+            Cashflow::firstOrCreate(
+                ['tenant_id' => $tenantId, 'branch_id' => $branch->id, 'description' => $desc],
+                [
+                    'cashflow_category_id' => $expenseCategory->id,
+                    'type' => CashflowType::Expense,
+                    'amount' => $amount,
+                    'occurred_on' => now()->subDays($daysAgo)->toDateString(),
+                ],
+            );
+        }
     }
 
     /**
