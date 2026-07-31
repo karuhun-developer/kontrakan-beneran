@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Invoice;
 use App\Support\Payments\GatewayCharge;
 use App\Support\Payments\GatewayNotification;
+use Illuminate\Http\Request;
 
 /**
  * A driver that performs no real network calls. Used for local development and
@@ -19,7 +20,12 @@ class NullGateway implements PaymentGateway
         return 'null';
     }
 
-    public function createCharge(Invoice $invoice, string $reference, int $amount): GatewayCharge
+    public function availableMethods(): array
+    {
+        return [];
+    }
+
+    public function createCharge(Invoice $invoice, string $reference, int $amount, ?string $methodCode = null): GatewayCharge
     {
         return new GatewayCharge(
             reference: $reference,
@@ -29,8 +35,10 @@ class NullGateway implements PaymentGateway
         );
     }
 
-    public function parseNotification(array $payload): GatewayNotification
+    public function parseNotification(Request $request): GatewayNotification
     {
+        $payload = $request->all();
+
         return new GatewayNotification(
             reference: (string) ($payload['order_id'] ?? ''),
             status: $this->mapStatus((string) ($payload['transaction_status'] ?? 'settlement')),

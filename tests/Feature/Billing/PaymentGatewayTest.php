@@ -24,6 +24,7 @@ use App\Services\Payments\PaymentGatewayManager;
 use App\Support\Payments\GatewayNotification;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class PaymentGatewayTest extends TestCase
@@ -205,13 +206,13 @@ class PaymentGatewayTest extends TestCase
 
         $this->expectException(InvalidGatewayNotificationException::class);
 
-        $gateway->parseNotification([
+        $gateway->parseNotification(Request::create('/webhooks/payment', 'POST', [
             'order_id' => 'KOSTPRO-1',
             'status_code' => '200',
             'gross_amount' => '1000000.00',
             'signature_key' => 'forged',
             'transaction_status' => 'settlement',
-        ]);
+        ]));
     }
 
     public function test_midtrans_accepts_a_valid_signature()
@@ -221,13 +222,13 @@ class PaymentGatewayTest extends TestCase
 
         $signature = hash('sha512', 'KOSTPRO-1'.'200'.'1000000.00'.$serverKey);
 
-        $notification = $gateway->parseNotification([
+        $notification = $gateway->parseNotification(Request::create('/webhooks/payment', 'POST', [
             'order_id' => 'KOSTPRO-1',
             'status_code' => '200',
             'gross_amount' => '1000000.00',
             'signature_key' => $signature,
             'transaction_status' => 'settlement',
-        ]);
+        ]));
 
         $this->assertSame('KOSTPRO-1', $notification->reference);
         $this->assertSame(PaymentStatus::Completed, $notification->status);
@@ -248,5 +249,31 @@ class PaymentGatewayTest extends TestCase
             'method' => PaymentMethod::Midtrans->value,
             'status' => PaymentStatus::Pending->value,
         ]);
+    }
+
+    public function test_gateway_pending_payment_is_not_staff_reviewable()
+    {
+        config()->set('payment.default', 'null');
+        $this->actingAsRole(UserRole::Owner);
+
+        $invoice = $this->invoice(1_000_000);
+        $payment = $invoice->payments()->create([
+            'tenant_id' => $invoice->tenant_id,
+            'branch_id' => $invoice->branch_id,
+            'penyewa_id' => $invoice->penyewa_id,
+            'amount' => 1_000_000,
+            'method' => PaymentMethod::Qris,
+            'status' => PaymentStatus::Pending,
+            'reference' => 'KOSTPRO-1',
+        ]);
+
+        $this->get(route('invoices.show', $invoice))
+            ->assertInertia(fn ($page) => $page
+                ->where('_inertiaui_modal.props.invoice.payments.0.can_review', false));
+
+        $this->post(route('invoices.payments.reject', $payment))
+            ->assertSessionHas('error');
+
+        $this->assertSame(PaymentStatus::Pending, $payment->refresh()->status);
     }
 }

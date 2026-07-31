@@ -7,6 +7,7 @@ use App\Actions\Billing\GenerateInvoiceForBooking;
 use App\Actions\Billing\InitiateGatewayPayment;
 use App\Actions\Billing\RecordPayment;
 use App\Actions\Billing\VoidInvoice;
+use App\Contracts\PaymentGateway;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -143,7 +144,9 @@ class InvoiceController extends Controller
                     'paid_at' => $payment->paid_at?->toDateTimeString(),
                     'proof_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF) ?: null,
                     'proof_thumb_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF, 'thumb') ?: null,
-                    'can_review' => $payment->status === PaymentStatus::Pending,
+                    // Gateway payments (they carry a reference) settle via webhook,
+                    // not staff confirmation — only manual submissions are reviewable.
+                    'can_review' => $payment->status === PaymentStatus::Pending && $payment->reference === null,
                 ]),
             ],
             'paymentMethods' => array_map(
@@ -198,16 +201,26 @@ class InvoiceController extends Controller
             return back()->with('error', 'Pembayaran ini sudah ditinjau.');
         }
 
+        if ($payment->reference !== null) {
+            return back()->with('error', 'Pembayaran ini diselesaikan otomatis oleh gateway.');
+        }
+
         $payment->update(['status' => PaymentStatus::Failed]);
 
         return back()->with('success', 'Konfirmasi pembayaran ditolak.');
     }
 
-    public function checkout(Request $request, Invoice $invoice, InitiateGatewayPayment $action): SymfonyResponse
+    public function checkout(Request $request, Invoice $invoice, InitiateGatewayPayment $action, PaymentGateway $gateway): SymfonyResponse
     {
         $invoice = $this->findInvoice($invoice->getKey());
 
-        $charge = $action->handle($invoice, $request->user());
+        $methodCodes = array_column($gateway->availableMethods(), 'code');
+
+        $validated = $request->validate([
+            'method' => ['nullable', 'string', Rule::in($methodCodes)],
+        ], [], ['method' => 'metode pembayaran']);
+
+        $charge = $action->handle($invoice, $request->user(), $validated['method'] ?? null);
 
         if ($charge->redirectUrl !== null) {
             return Inertia::location($charge->redirectUrl);

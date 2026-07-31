@@ -1,5 +1,4 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import {
     ArrowDownCircle,
     ArrowUpCircle,
@@ -8,6 +7,7 @@ import {
     TrendingDown,
     TrendingUp,
 } from 'lucide-react';
+import { useState } from 'react';
 import { PageHeader } from '@/components/master/page-header';
 import { ColorBadge } from '@/components/master/status-badge';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -22,8 +22,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
 import { formatRupiah, formatRupiahShort } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import reports from '@/routes/reports';
 
 type TrendPoint = {

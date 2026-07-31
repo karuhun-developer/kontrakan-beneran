@@ -1,12 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BedDouble,
-    BookOpen,
     Building,
     Building2,
     CalendarCheck,
     ChartColumn,
-    FolderGit2,
     Landmark,
     LayoutGrid,
     PiggyBank,
@@ -20,7 +18,6 @@ import {
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { BranchSwitcher } from '@/components/branch-switcher';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -33,6 +30,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useCan } from '@/hooks/use-can';
+import { dashboard } from '@/routes';
 import bookings from '@/routes/bookings';
 import cashflows from '@/routes/cashflows';
 import deposits from '@/routes/deposits';
@@ -47,7 +45,6 @@ import penyewa from '@/routes/penyewa';
 import reports from '@/routes/reports';
 import roomTypes from '@/routes/room-types';
 import rooms from '@/routes/rooms';
-import { dashboard } from '@/routes';
 import type { Auth, NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -153,19 +150,6 @@ const settingsNavItems: GatedNavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
 export function AppSidebar() {
     const can = useCan();
     const { auth } = usePage<{ auth: Auth }>().props;
@@ -225,7 +209,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

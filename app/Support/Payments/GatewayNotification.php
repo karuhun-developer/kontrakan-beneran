@@ -17,5 +17,6 @@ final class GatewayNotification
         public readonly PaymentStatus $status,
         public readonly int $amount,
         public readonly array $raw = [],
+        public readonly ?string $method = null,
     ) {}
 }

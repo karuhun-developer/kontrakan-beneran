@@ -10,6 +10,18 @@ Satu platform bisa menampung banyak **bisnis (tenant)**, tiap bisnis punya banya
 
 ---
 
+## Open Source & Dukungan
+
+KostPro **gratis dan open source** ([lisensi MIT](./LICENSE)) — bebas kamu self-host, pelajari, dan kembangkan sendiri.
+
+- 💻 **Self-host** — ikuti panduan [Pengembangan](#pengembangan) di bawah untuk menjalankan sendiri.
+- ❤️ **Dukung** — kalau proyek ini membantu, kamu bisa traktir lewat Saweria (tautan di landing page).
+- 🛟 **Dibantu pasang** — males ribet install atau butuh hosting? Kami bisa setup-kan. Hubungi kontak di landing page.
+
+> Tautan GitHub, Saweria, dan kontak diatur lewat konstanta di `resources/js/pages/welcome.tsx`.
+
+---
+
 ## Tech Stack
 
 | Lapisan | Teknologi |

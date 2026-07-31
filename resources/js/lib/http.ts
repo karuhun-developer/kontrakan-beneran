@@ -50,6 +50,7 @@ export async function postJson<T = unknown>(
             errors?: Record<string, string[]>;
         };
         const errors: Record<string, string> = {};
+
         for (const [key, messages] of Object.entries(body.errors ?? {})) {
             errors[key] = messages[0];
         }

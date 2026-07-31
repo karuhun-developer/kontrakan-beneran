@@ -113,7 +113,7 @@ class DashboardController extends Controller
     private function buildCashflow(int $branchId, CarbonImmutable $today): array
     {
         $rows = Cashflow::forBranch($branchId)
-            ->whereBetween('occurred_on', [$today->startOfMonth()->toDateString(), $today->endOfMonth()->toDateString()])
+            ->whereBetween('occurred_on', [$today->startOfMonth(), $today->endOfMonth()])
             ->selectRaw('type, SUM(amount) as aggregate')
             ->groupBy('type')
             ->pluck('aggregate', 'type');
@@ -138,7 +138,7 @@ class DashboardController extends Controller
         $start = $today->startOfMonth()->subMonths(5);
 
         $rows = Cashflow::forBranch($branchId)
-            ->whereBetween('occurred_on', [$start->toDateString(), $today->endOfMonth()->toDateString()])
+            ->whereBetween('occurred_on', [$start, $today->endOfMonth()])
             ->get(['type', 'amount', 'occurred_on']);
 
         $trend = [];
@@ -175,7 +175,7 @@ class DashboardController extends Controller
     {
         return Invoice::forBranch($branchId)
             ->whereIn('status', InvoiceStatus::outstanding())
-            ->whereBetween('due_date', [$today->toDateString(), $today->addDays(7)->toDateString()])
+            ->whereBetween('due_date', [$today, $today->addDays(7)->endOfDay()])
             ->with('penyewa:id,name')
             ->withSum(['payments as paid_amount' => fn (Builder $q) => $q->where('status', PaymentStatus::Completed->value)], 'amount')
             ->orderBy('due_date')

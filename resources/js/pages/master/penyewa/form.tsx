@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { KeyRound } from 'lucide-react';
-import { ChangeEvent, FormEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import InputError from '@/components/input-error';
 import { ModalForm } from '@/components/master/modal-form';
 import { Button } from '@/components/ui/button';

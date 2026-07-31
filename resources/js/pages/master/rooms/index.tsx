@@ -1,8 +1,8 @@
 import { Head, usePage } from '@inertiajs/react';
-import { ColorBadge, StatusBadge } from '@/components/master/status-badge';
 import { PageHeader } from '@/components/master/page-header';
 import { Pagination } from '@/components/master/pagination';
 import { RowActions } from '@/components/master/row-actions';
+import { ColorBadge, StatusBadge } from '@/components/master/status-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,

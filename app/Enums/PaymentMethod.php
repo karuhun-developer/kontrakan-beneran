@@ -33,6 +33,20 @@ enum PaymentMethod: string
     }
 
     /**
+     * Map an online gateway's method type (e.g. Paywuz "qris" / "virtual_account")
+     * to a stored method. Unknown or absent types fall back to Midtrans so the
+     * existing single-gateway behavior is preserved.
+     */
+    public static function fromGatewayType(?string $type): self
+    {
+        return match (strtolower((string) $type)) {
+            'qris' => self::Qris,
+            'va', 'virtual_account', 'virtualaccount' => self::VirtualAccount,
+            default => self::Midtrans,
+        };
+    }
+
+    /**
      * Methods a staff member can record by hand.
      *
      * @return list<self>

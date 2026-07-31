@@ -12,17 +12,73 @@ import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
+type DemoAccount = {
+    role: string;
+    email: string;
+    password: string;
+};
+
 type Props = {
     status?: string;
     canResetPassword: boolean;
+    demo?: DemoAccount[] | null;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({ status, canResetPassword, demo }: Props) {
+    const fillDemo = (account: DemoAccount) => {
+        const email = document.getElementById(
+            'email',
+        ) as HTMLInputElement | null;
+        const password = document.getElementById(
+            'password',
+        ) as HTMLInputElement | null;
+
+        if (email) {
+            email.value = account.email;
+        }
+
+        if (password) {
+            password.value = account.password;
+        }
+
+        email?.focus();
+    };
+
     return (
         <>
             <Head title="Log in" />
 
             <PasskeyVerify />
+
+            {demo && demo.length > 0 && (
+                <div className="mb-6 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                    <p className="mb-2 font-medium">
+                        Akun demo — klik untuk mengisi
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                        {demo.map((account) => (
+                            <button
+                                key={account.email}
+                                type="button"
+                                onClick={() => fillDemo(account)}
+                                className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-background px-3 py-2 text-left transition hover:border-primary/50 hover:bg-accent"
+                            >
+                                <span>
+                                    <span className="font-medium">
+                                        {account.role}
+                                    </span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        {account.email}
+                                    </span>
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                    {account.password}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <Form
                 {...store.form()}

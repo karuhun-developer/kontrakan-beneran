@@ -11,3 +11,7 @@ parameters:
         - routes/
 
     level: 7
+
+    # Models declare casts via the Laravel 11 `casts()` method, so Larastan must
+    # parse that method statically to type enum/date-cast attributes correctly.
+    parseModelCastsMethod: true

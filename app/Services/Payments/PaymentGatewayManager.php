@@ -21,6 +21,13 @@ class PaymentGatewayManager extends Manager
         return new MidtransGateway($this->config->get('payment.gateways.midtrans', []));
     }
 
+    protected function createPaywuzDriver(): PaymentGateway
+    {
+        $config = $this->config->get('payment.gateways.paywuz', []);
+
+        return new PaywuzGateway(new PaywuzClient($config), $config);
+    }
+
     protected function createNullDriver(): PaymentGateway
     {
         return new NullGateway;

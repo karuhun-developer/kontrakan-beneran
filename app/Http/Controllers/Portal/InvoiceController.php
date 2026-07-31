@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Portal;
 
 use App\Actions\Billing\InitiateGatewayPayment;
 use App\Actions\Billing\SubmitManualPayment;
+use App\Contracts\PaymentGateway;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Concerns\ResolvesPenyewa;
@@ -14,6 +15,7 @@ use App\Models\Payment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use InertiaUI\Modal\Modal;
@@ -69,7 +71,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function show(Invoice $invoice): Modal
+    public function show(Invoice $invoice, PaymentGateway $gateway): Modal
     {
         $invoice = $this->findInvoice($invoice->getKey());
         $invoice->load([
@@ -127,14 +129,21 @@ class InvoiceController extends Controller
                     'proof_thumb_url' => $payment->getFirstMediaUrl(Payment::MEDIA_PROOF, 'thumb') ?: null,
                 ]),
             ],
+            'payment_methods' => $invoice->status->isOutstanding() ? $gateway->availableMethods() : [],
         ])->baseRoute('portal.invoices.index');
     }
 
-    public function checkout(Request $request, Invoice $invoice, InitiateGatewayPayment $action): SymfonyResponse
+    public function checkout(Request $request, Invoice $invoice, InitiateGatewayPayment $action, PaymentGateway $gateway): SymfonyResponse
     {
         $invoice = $this->findInvoice($invoice->getKey());
 
-        $charge = $action->handle($invoice, $request->user());
+        $methodCodes = array_column($gateway->availableMethods(), 'code');
+
+        $validated = $request->validate([
+            'method' => ['nullable', 'string', Rule::in($methodCodes)],
+        ], [], ['method' => 'metode pembayaran']);
+
+        $charge = $action->handle($invoice, $request->user(), $validated['method'] ?? null);
 
         if ($charge->redirectUrl !== null) {
             return Inertia::location($charge->redirectUrl);

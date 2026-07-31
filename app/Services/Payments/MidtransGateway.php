@@ -8,6 +8,7 @@ use App\Exceptions\InvalidGatewayNotificationException;
 use App\Models\Invoice;
 use App\Support\Payments\GatewayCharge;
 use App\Support\Payments\GatewayNotification;
+use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -23,7 +24,13 @@ class MidtransGateway implements PaymentGateway
         return 'midtrans';
     }
 
-    public function createCharge(Invoice $invoice, string $reference, int $amount): GatewayCharge
+    public function availableMethods(): array
+    {
+        // Midtrans hosts its own method picker on the Snap page.
+        return [];
+    }
+
+    public function createCharge(Invoice $invoice, string $reference, int $amount, ?string $methodCode = null): GatewayCharge
     {
         $this->configure();
 
@@ -57,8 +64,10 @@ class MidtransGateway implements PaymentGateway
         );
     }
 
-    public function parseNotification(array $payload): GatewayNotification
+    public function parseNotification(Request $request): GatewayNotification
     {
+        $payload = $request->all();
+
         $orderId = (string) ($payload['order_id'] ?? '');
         $statusCode = (string) ($payload['status_code'] ?? '');
         $grossAmount = (string) ($payload['gross_amount'] ?? '');

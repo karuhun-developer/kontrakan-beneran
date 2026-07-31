@@ -1,5 +1,5 @@
-import { ModalRoot } from '@inertiaui/modal-react';
 import { Link, usePage } from '@inertiajs/react';
+import { ModalRoot } from '@inertiaui/modal-react';
 import {
     History,
     KeyRound,

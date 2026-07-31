@@ -8,10 +8,41 @@ import { ColorBadge } from '@/components/master/status-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDate, formatDateTime, formatRupiah } from '@/lib/format';
 import portalInvoices from '@/routes/portal/invoices';
-import type { PortalInvoiceDetail } from '@/types/portal';
+import type { GatewayMethod, PortalInvoiceDetail } from '@/types/portal';
+
+const METHOD_GROUP_LABELS: Record<string, string> = {
+    qris: 'QRIS',
+    va: 'Virtual Account',
+    virtual_account: 'Virtual Account',
+    virtualaccount: 'Virtual Account',
+};
+
+function groupLabel(type: string): string {
+    return METHOD_GROUP_LABELS[type] ?? 'Metode Lain';
+}
+
+function groupMethods(methods: GatewayMethod[]): [string, GatewayMethod[]][] {
+    const groups = new Map<string, GatewayMethod[]>();
+
+    for (const method of methods) {
+        const label = groupLabel(method.type);
+        groups.set(label, [...(groups.get(label) ?? []), method]);
+    }
+
+    return [...groups.entries()];
+}
 
 function InfoRow({ label, value }: { label: string; value: string }) {
     return (
@@ -49,8 +80,10 @@ function TotalRow({
 
 export default function PortalInvoiceDetailModal({
     invoice,
+    payment_methods = [],
 }: {
     invoice: PortalInvoiceDetail;
+    payment_methods?: GatewayMethod[];
 }) {
     const [processing, setProcessing] = useState(false);
     const [showManual, setShowManual] = useState(false);
@@ -58,12 +91,15 @@ export default function PortalInvoiceDetailModal({
     const [notes, setNotes] = useState('');
     const [proof, setProof] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [method, setMethod] = useState(payment_methods[0]?.code ?? '');
+
+    const methodGroups = groupMethods(payment_methods);
 
     const payOnline = (close: () => void) => {
         setProcessing(true);
         router.post(
             portalInvoices.checkout(invoice.id).url,
-            {},
+            method ? { method } : {},
             {
                 preserveScroll: true,
                 onSuccess: () => close(),
@@ -184,15 +220,54 @@ export default function PortalInvoiceDetailModal({
                     </div>
 
                     {invoice.can_pay && (
-                        <Button
-                            type="button"
-                            className="w-full"
-                            disabled={processing}
-                            onClick={() => payOnline(close)}
-                        >
-                            <CreditCard className="size-4" />
-                            Bayar Online
-                        </Button>
+                        <div className="space-y-3">
+                            {methodGroups.length > 0 && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="method">
+                                        Metode Pembayaran
+                                    </Label>
+                                    <Select
+                                        value={method}
+                                        onValueChange={setMethod}
+                                    >
+                                        <SelectTrigger
+                                            id="method"
+                                            className="w-full"
+                                        >
+                                            <SelectValue placeholder="Pilih metode pembayaran" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {methodGroups.map(
+                                                ([label, methods]) => (
+                                                    <SelectGroup key={label}>
+                                                        <SelectLabel>
+                                                            {label}
+                                                        </SelectLabel>
+                                                        {methods.map((m) => (
+                                                            <SelectItem
+                                                                key={m.code}
+                                                                value={m.code}
+                                                            >
+                                                                {m.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                ),
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                            <Button
+                                type="button"
+                                className="w-full"
+                                disabled={processing}
+                                onClick={() => payOnline(close)}
+                            >
+                                <CreditCard className="size-4" />
+                                Bayar Online
+                            </Button>
+                        </div>
                     )}
 
                     {invoice.has_pending_payment && (
